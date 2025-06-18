@@ -16,7 +16,7 @@ import "./app.css";
 
 import { rootAuthLoader } from '@clerk/react-router/ssr.server'
 import { dark } from '@clerk/themes'
-import stylesheet from './app.css?url'
+import './app.css'
 import { NavigationBar, ThemeProvider, useTheme } from './components'
 
 export async function loader(args: Route.LoaderArgs) {
@@ -34,12 +34,12 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
-  { rel: 'stylesheet', href: stylesheet },
+  { rel: 'stylesheet', href: '/app/app.css' },
 ];
 
-export function Layout({ children, isDark }: { children: React.ReactNode, isDark?: boolean }) {
+export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={isDark ? 'dark' : ''}>
+    <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -139,24 +139,17 @@ function AppContent(props: Route.ComponentProps) {
       </div>
 
       <NavigationBar onMenuClick={() => setIsSidebarOpen(true)} />
-      <main>
+      <main className="min-h-[calc(100vh-4rem)]">
         <Outlet />
       </main>
     </ClerkProviderWithTheme>
   )
 }
 
-function ThemedLayout({ children }: { children: React.ReactNode }) {
-  const { isDark } = useTheme()
-  return <Layout isDark={isDark}>{children}</Layout>
-}
-
 export default function App(props: Route.ComponentProps) {
   return (
     <ThemeProvider>
-      <ThemedLayout>
-        <AppContent {...props} />
-      </ThemedLayout>
+      <AppContent {...props} />
     </ThemeProvider>
   )
 }

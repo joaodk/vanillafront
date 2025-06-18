@@ -1,14 +1,18 @@
 import type { Route } from "../+types/root";
+import { AssistantRuntimeProvider } from "@assistant-ui/react";
+import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
+import { ThreadList } from "~/components/assistant-ui/thread-list";
+import { Thread } from "~/components/assistant-ui/thread";
+
 
 export default function ChatPage() {
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Chat</h1>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <p className="text-gray-700 dark:text-gray-300">
-          This is the chat page. Chat functionality will be implemented here.
-        </p>
+  const runtime = useChatRuntime({
+    api: "/api/chat",
+  });  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      <div className="grid h-[calc(100dvh-4rem)] grid-cols-[200px_minmax(0,1fr)] gap-x-2 px-4 py-4">
+        <ThreadList />
+        <Thread />
       </div>
-    </div>
-  )
+    </AssistantRuntimeProvider>  )
 }
