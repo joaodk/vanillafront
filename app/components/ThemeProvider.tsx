@@ -21,21 +21,44 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme')
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      return savedTheme === 'dark' || (!savedTheme && prefersDark);
+    }
+    return false;
+  });
 
   useEffect(() => {
-    // Check if user has a saved preference
-    const savedTheme = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDark(true)
+    if (isDark) {
       document.documentElement.classList.add('dark')
     } else {
-      setIsDark(false)
       document.documentElement.classList.remove('dark')
     }
-  }, [])
+  }, [isDark])
+
+  useEffect(() => {
+    // Apply initial theme class
+    if (typeof window !== 'undefined') {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Still keep the effect for theme changes
+    if (typeof window !== 'undefined') {
+      if (isDark) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    }
+  }, [isDark])
 
   const toggleTheme = () => {
     const newIsDark = !isDark
@@ -50,9 +73,21 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   }
 
+ const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return null; // Or a loading indicator
+  }
+
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-      {children}
+      <div className={isDark ? 'dark' : ''}>
+        {children}
+      </div>
     </ThemeContext.Provider>
-  )
+  );
 }
