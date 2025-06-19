@@ -1,9 +1,31 @@
 import { useUser } from '@clerk/react-router'
-import { useState } from 'react'
+import { useAuth } from "@clerk/clerk-react";
+import { useState, useEffect } from 'react'
+
+const safeDateString = (date: Date | null | undefined) => {
+  if (!date) return 'Unknown'
+  return new Date(date).toLocaleDateString()
+}
 
 export function UserInfoTooltip() {
   const { user } = useUser()
+
+  const { has } = useAuth()
+
   const [showTooltip, setShowTooltip] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [freeUser, setFreeUser] = useState<string>('Unknown');
+  const [fullAccess, setFullAccess] = useState<string>('Unknown');
+  const [premium, setPremium] = useState<string>('');
+
+  useEffect(() => {
+    if (has) {
+      setFreeUser(has({ plan: "free_user" }) ? 'true' : 'false');
+      setFullAccess(has({ plan: "full_access" }) ? 'true' : 'false');
+      setPremium(has({ feature: "premium" }) ? "true" : "false");
+      setHasLoaded(true);
+    }
+  }, [has]);
 
   if (!user) return null
 
@@ -41,10 +63,28 @@ export function UserInfoTooltip() {
             </div>
             <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Member since: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
+                Member since: {safeDateString(user.createdAt)}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Last sign in: {(user.lastSignInAt || user.createdAt) ? new Date(user.lastSignInAt || user.createdAt!).toLocaleDateString() : 'Unknown'}
+                Last sign in: {safeDateString(user.lastSignInAt || user.createdAt)}
+              </p>
+            </div>
+            <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
+              {hasLoaded ? (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  free_user: {freeUser}
+                  <br />
+                  full_access: {fullAccess}
+                                    <br />
+                  premium: {premium}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Loading...
+                </p>
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {premium && `, ${premium}`}
               </p>
             </div>
           </div>
