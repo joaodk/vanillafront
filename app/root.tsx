@@ -19,6 +19,8 @@ import { dark } from '@clerk/themes'
 import './app.css'
 import { NavigationBar, ThemeProvider, useTheme } from './components'
 
+import { VanillaRuntimeProvider } from "./VanillaRuntimeProvider";
+
 export async function loader(args: Route.LoaderArgs) {
   return rootAuthLoader(args)
 }
@@ -39,6 +41,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
+    <VanillaRuntimeProvider>
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
@@ -53,6 +56,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
+    </VanillaRuntimeProvider>
   );
 }
 

@@ -14,5 +14,5 @@ Next steps:
 -make it work smoothly with a custom back-end
 -add tool-use and a mcp server connection
 
-
-
+currently working on:
+https://www.assistant-ui.com/docs/runtimes/custom/local#getting-started
