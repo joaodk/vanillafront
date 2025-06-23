@@ -41,7 +41,6 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <VanillaRuntimeProvider>
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
@@ -56,7 +55,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
-    </VanillaRuntimeProvider>
   );
 }
 
@@ -83,6 +81,7 @@ function AppContent(props: Route.ComponentProps) {
 
   return (
     <ClerkProviderWithTheme loaderData={loaderData}>
+      <VanillaRuntimeProvider>
       {/* Sidebar overlay */}
       {isSidebarOpen && (
         <div 
@@ -147,6 +146,7 @@ function AppContent(props: Route.ComponentProps) {
       <main className="min-h-[calc(100vh-4rem)]">
         <Outlet />
       </main>
+      </VanillaRuntimeProvider>
     </ClerkProviderWithTheme>
   )
 }

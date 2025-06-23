@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/react-router'
-import { useAuth } from "@clerk/clerk-react";
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useAuthData } from '../lib/auth';
 
 const safeDateString = (date: Date | null | undefined) => {
   if (!date) return 'Unknown'
@@ -9,23 +9,9 @@ const safeDateString = (date: Date | null | undefined) => {
 
 export function UserInfoTooltip() {
   const { user } = useUser()
-
-  const { has } = useAuth()
+  const { hasLoaded, freeUser, fullAccess, premium, token } = useAuthData()
 
   const [showTooltip, setShowTooltip] = useState(false)
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [freeUser, setFreeUser] = useState<string>('Unknown');
-  const [fullAccess, setFullAccess] = useState<string>('Unknown');
-  const [premium, setPremium] = useState<string>('');
-
-  useEffect(() => {
-    if (has) {
-      setFreeUser(has({ plan: "free_user" }) ? 'true' : 'false');
-      setFullAccess(has({ plan: "full_access" }) ? 'true' : 'false');
-      setPremium(has({ feature: "premium" }) ? "true" : "false");
-      setHasLoaded(true);
-    }
-  }, [has]);
 
   if (!user) return null
 
@@ -75,7 +61,7 @@ export function UserInfoTooltip() {
                   free_user: {freeUser}
                   <br />
                   full_access: {fullAccess}
-                                    <br />
+                  <br />
                   premium: {premium}
                 </p>
               ) : (
@@ -85,6 +71,11 @@ export function UserInfoTooltip() {
               )}
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {premium && `, ${premium}`}
+              </p>
+            </div>
+            <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Token: {token}
               </p>
             </div>
           </div>

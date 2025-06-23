@@ -9,11 +9,25 @@ import {
   type ChatModelAdapter,
 } from "@assistant-ui/react";
 import { backendApiCall } from "./lib/backendApiCall";
+import { useAuthData } from "./lib/auth";
 
 const VanillaModelAdapter: ChatModelAdapter = {
-  async *run(options) {
+  async *run(options: any) {
+    // Always yield once at the start to ensure this is an async generator
+    yield { content: [] };
+
     const { messages, abortSignal, context } = options;
-    const stream = await backendApiCall(options);
+    // Use token from options (already injected by wrapper)
+    let stream;
+    try {
+      stream = await backendApiCall(options, options.token);
+    } catch (error) {
+      yield {
+        content: [],
+        error: error instanceof Error ? error.message : String(error),
+      };
+      return;
+    }
 
     let content = "";
     const toolCalls: any[] = [];
@@ -86,7 +100,34 @@ export function VanillaRuntimeProvider({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const runtime = useLocalRuntime(VanillaModelAdapter);
+  const { token } = useAuthData();
+  // Wrap the adapter to inject the token if not present in options
+  const runtime = useLocalRuntime({
+    ...VanillaModelAdapter,
+    async *run(options: any) {
+      // Always yield once at the start to ensure this is an async generator
+      yield { content: [] };
+      // Always inject the token from useAuthData if not present
+      const mergedOptions = { ...options, token: options.token ?? token };
+      // Ensure the correct async generator is returned
+      try {
+        const result = VanillaModelAdapter.run(mergedOptions);
+        if (typeof result[Symbol.asyncIterator] === "function") {
+          for await (const item of result) {
+            yield item;
+          }
+        } else {
+          // If not an async generator, yield the result as a single value
+          yield await result;
+        }
+      } catch (error) {
+        yield {
+          content: [],
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
+    },
+  });
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
