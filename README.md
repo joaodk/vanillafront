@@ -16,3 +16,24 @@ Next steps:
 
 currently working on:
 https://www.assistant-ui.com/docs/runtimes/custom/local#getting-started
+
+expected response format:
+{
+  "choices": [
+    {
+      "delta": {
+        "content": "text content",
+        "tool_calls": [
+          {
+            "index": 0,
+            "id": "tool_call_id",
+            "function": {
+              "name": "tool_name",
+              "arguments": "{\"arg1\": \"value1\"}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
