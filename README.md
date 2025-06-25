@@ -15,6 +15,13 @@ Next steps:
 -add tool-use and a mcp server connection
 
 currently working on:
+
+hitting 
+
+
+
+
+
 https://www.assistant-ui.com/docs/runtimes/custom/local#getting-started
 
 expected response format:
