@@ -7,9 +7,9 @@ import {
   type ChatModelAdapter,
 } from "@assistant-ui/react";
 import { backendApiCall } from "./lib/backendApiCall";
-import { useAuthData } from "./lib/auth";
+import { useAuth } from "@clerk/clerk-react";
 
-const VanillaModelAdapter: ChatModelAdapter = {
+const createVanillaModelAdapter = (getToken: () => Promise<string | null>): ChatModelAdapter => ({
   async *run(options: any) {
     // Always yield once at the start to ensure this is an async generator
     yield { content: [] };
@@ -17,7 +17,7 @@ const VanillaModelAdapter: ChatModelAdapter = {
     const { messages, abortSignal, context } = options;
     let stream;
     try {
-      stream = await backendApiCall(options, options.token);
+      stream = await backendApiCall(options, getToken);
     } catch (error) {
       yield {
         content: [],
@@ -126,37 +126,25 @@ const VanillaModelAdapter: ChatModelAdapter = {
       reader.releaseLock();
     }
   },
-};
+});
 
 export function VanillaRuntimeProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const { token } = useAuthData();
-  const runtime = useLocalRuntime({
-    ...VanillaModelAdapter,
-    async *run(options: any) {
-      // initial yield
-      yield { content: [] };
-      const merged = { ...options, token: options.token ?? token };
-      try {
-        const result = VanillaModelAdapter.run(merged);
-        if (typeof result[Symbol.asyncIterator] === "function") {
-          for await (const item of result) {
-            yield item;
-          }
-        } else {
-          yield await result;
-        }
-      } catch (error) {
-        yield {
-          content: [],
-          error: error instanceof Error ? error.message : String(error),
-        };
-      }
-    },
-  });
+  const { getToken, isSignedIn, isLoaded, userId } = useAuth();
+  
+  // Debug authentication state
+  console.log('=== AUTH STATE DEBUG ===');
+  console.log('isLoaded:', isLoaded);
+  console.log('isSignedIn:', isSignedIn);
+  console.log('userId:', userId);
+  console.log('getToken function exists:', !!getToken);
+  console.log('========================');
+  
+  const vanillaModelAdapter = createVanillaModelAdapter(getToken);
+  const runtime = useLocalRuntime(vanillaModelAdapter);
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
