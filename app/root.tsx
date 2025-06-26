@@ -63,6 +63,7 @@ function ClerkProviderWithTheme({ children, loaderData }: { children: React.Reac
   
   return (
     <ClerkProvider
+      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
       appearance={{
         baseTheme: isDark ? dark : undefined,
       }}
