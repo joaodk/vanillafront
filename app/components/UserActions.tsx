@@ -1,6 +1,7 @@
 import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/react-router'
 import { UserInfoTooltip } from './UserInfoTooltip'
 import { DarkModeToggle } from './DarkModeToggle'
+import { CHAT_API, ENVIRONMENT } from '~/lib/constants';
 
 export function UserActions() {
   return (
@@ -15,7 +16,7 @@ export function UserActions() {
       </SignedOut>
       <SignedIn>
         <div className="flex items-center space-x-2">
-          <UserInfoTooltip />
+          {ENVIRONMENT !== "PROD" && <UserInfoTooltip />}
           <UserButton />
         </div>
       </SignedIn>

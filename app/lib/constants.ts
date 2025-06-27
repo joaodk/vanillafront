@@ -1,3 +1,14 @@
+export let ENVIRONMENT = "PROD";
+export const APP_TITLE = "Vanilla App";
+
+if (import.meta.env.MODE === "development") {
+  ENVIRONMENT = "DEV";
+}
+
+if (import.meta.env.VITE_ENVIRONMENT) {
+  ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT;
+}
+
 //export const CHAT_API = "http://localhost:8000/api/chat";
 //export const CHAT_API = "http://localhost:8008/chat";
 //export const CHAT_API = "http://joaodk-devbox.tail0c7363.ts.net:8008/chat";
