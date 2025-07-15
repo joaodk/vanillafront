@@ -12,6 +12,8 @@ Purpose: to serve as a template and stepping stone for more specific application
 Next steps:
 
 -make it work smoothly with a custom back-end
+
+
 -add tool-use and a mcp server connection
 
 currently working on:
