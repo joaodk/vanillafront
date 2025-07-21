@@ -1,14 +1,20 @@
-import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
-import { APP_TITLE } from "~/lib/constants";
+import { FC, useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: APP_TITLE },
-    { name: "description", content: `Welcome to ${APP_TITLE}!` },
-  ];
-}
+const HomePage: FC = () => {
+  const [markdown, setMarkdown] = useState("");
 
-export default function Home() {
-  return <Welcome />;
-}
+  useEffect(() => {
+    fetch("/home.md")
+      .then((response) => response.text())
+      .then((text) => setMarkdown(text));
+  }, []);
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <ReactMarkdown>{markdown}</ReactMarkdown>
+    </div>
+  );
+};
+
+export default HomePage;

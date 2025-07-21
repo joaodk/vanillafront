@@ -18,7 +18,7 @@ Next steps:
 
 currently working on:
 
-hitting 
+
 
 
 
