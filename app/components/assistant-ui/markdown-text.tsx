@@ -8,17 +8,57 @@ import {
   unstable_memoizeMarkdownComponents as memoizeMarkdownComponents,
   useIsMarkdownCodeBlock,
 } from "@assistant-ui/react-markdown";
+import { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { type FC, memo, useState } from "react";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, ChevronDownIcon } from "lucide-react";
 
 import { TooltipIconButton } from "./tooltip-icon-button";
 import { cn } from "../../lib/utils";
+import rehypeThinkPlugin from "../../lib/rehype-think-plugin"; // Corrected import path
+
+const ThinkBlock: FC<React.ComponentPropsWithoutRef<"blockquote">> = ({
+  children,
+  className,
+  ...props
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  return (
+    <blockquote
+      className={cn(
+        "border-l-2 pl-6 italic",
+        className,
+        "relative overflow-hidden rounded-md bg-zinc-100 p-4 dark:bg-zinc-800",
+      )}
+      {...props}
+    >
+      <div
+        className="flex cursor-pointer items-center justify-between"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <span className="font-semibold">Thought</span>
+        <ChevronDownIcon
+          className={cn("h-4 w-4 transition-transform", !isCollapsed && "rotate-180")}
+        />
+      </div>
+      <div
+        className={cn(
+          "grid transition-all duration-300 ease-in-out",
+          isCollapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100",
+        )}
+      >
+        <div className="overflow-hidden">{children}</div>
+      </div>
+    </blockquote>
+  );
+};
 
 const MarkdownTextImpl = () => {
   return (
     <MarkdownTextPrimitive
       remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeThinkPlugin]}
       className="aui-md"
       components={defaultComponents}
     />
@@ -89,9 +129,14 @@ const defaultComponents = memoizeMarkdownComponents({
   a: ({ className, ...props }) => (
     <a className={cn("text-primary font-medium underline underline-offset-4", className)} {...props} />
   ),
-  blockquote: ({ className, ...props }) => (
-    <blockquote className={cn("border-l-2 pl-6 italic", className)} {...props} />
-  ),
+  blockquote: ({ className, ...props }) => {
+    if (className?.includes("think-block")) {
+      return <ThinkBlock className={className} {...props} />;
+    }
+    return (
+      <blockquote className={cn("border-l-2 pl-6 italic", className)} {...props} />
+    );
+  },
   ul: ({ className, ...props }) => (
     <ul className={cn("my-5 ml-6 list-disc [&>li]:mt-2", className)} {...props} />
   ),

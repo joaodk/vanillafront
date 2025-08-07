@@ -22,7 +22,7 @@ export const SUGGESTED_QUERIES = [
     label: "What is the weather in tokyo like today?",
   },
   {
-    prompt: "What is assistant-ui?",
-    label: "What is assistant-ui?",
+    prompt: "why is the sky blue? do not think, give a quick response consistent with voice output.",
+    label: "why is the sky blue? (short)",
   },
 ];
