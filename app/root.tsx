@@ -139,6 +139,16 @@ function AppContent(props: Route.ComponentProps) {
               </svg>
               Chat
             </Link>
+            <Link
+              to="/about"
+              onClick={() => setIsSidebarOpen(false)}
+              className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              About
+            </Link>
           </nav>
         </div>
       </div>
