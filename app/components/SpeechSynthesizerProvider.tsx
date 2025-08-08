@@ -121,6 +121,7 @@ export class SpeechSynthesizer {
   private textCleaner: TextCleaner;
   private audioContext: AudioContext | null = null;
   private currentAudioElement: HTMLAudioElement | null = null;
+  private audioEndedCallback: (() => void) | null = null;
 
   constructor() {
     this.textCleaner = new TextCleaner();
@@ -213,9 +214,18 @@ export class SpeechSynthesizer {
     }
   }
 
-  public async playAudio(url: string): Promise<void> {
+  public async playAudio(url: string, onAudioEnd?: () => void): Promise<void> {
     this.stopAudio(); // Stop any currently playing audio
     this.currentAudioElement = new Audio(url);
+    if (onAudioEnd) {
+      this.audioEndedCallback = onAudioEnd;
+      this.currentAudioElement.onended = () => {
+        if (this.audioEndedCallback) {
+          this.audioEndedCallback();
+        }
+        this.currentAudioElement = null; // Clear element after playback
+      };
+    }
     await this.currentAudioElement.play();
   }
 
@@ -223,11 +233,13 @@ export class SpeechSynthesizer {
     if (this.currentAudioElement) {
       this.currentAudioElement.pause();
       this.currentAudioElement.currentTime = 0;
+      this.currentAudioElement.onended = null; // Remove event listener
       this.currentAudioElement = null;
     }
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
+    this.audioEndedCallback = null; // Clear callback
   }
 
   public fallbackToBrowserSpeech(text: string): void {
