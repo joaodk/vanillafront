@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
+import { useSpeechSynthesizer } from './SpeechSynthesizerProvider';
 import * as ort from "onnxruntime-web";
 import { phonemize } from 'phonemizer';
 
@@ -120,161 +121,28 @@ async function phonemizeText(text:string) {
     }
 }
 
-class SpeechSynthesizer {
-  private session: ort.InferenceSession | null = null;
-  private voices: Voice | null = null;
-  private textCleaner: TextCleaner;
-  private audioContext: AudioContext | null = null;
-  private currentAudioElement: HTMLAudioElement | null = null;
-
-  constructor() {
-    this.textCleaner = new TextCleaner();
-    ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/";
-  }
-
-  public async loadModel(): Promise<void> {
-    try {
-      this.session = await ort.InferenceSession.create("/model/kitten_tts_nano_v0_1.onnx");
-      const voicesResponse = await fetch("/model/voices.json");
-      const voicesData = await voicesResponse.json();
-
-      const processedVoices: Voice = {};
-      for (const [voiceName, voiceArray] of Object.entries(voicesData)) {
-        const flatArray = Array.isArray((voiceArray as any)[0]) ? (voiceArray as any[]).flat() : voiceArray as number[];
-        processedVoices[voiceName] = new Float32Array(flatArray);
-      }
-      this.voices = processedVoices;
-      console.log('Kitten TTS model and voices loaded successfully!');
-    } catch (error) {
-      console.error("Error loading speech synthesis model:", error);
-      throw error; // Re-throw to be handled by the component
-    }
-  }
-
-  public async synthesizeSpeech(text: string, selectedVoice: string = 'expr-voice-2-m'): Promise<string> {
-    if (!this.session || !this.voices) {
-      throw new Error("Speech synthesis model not loaded.");
-    }
-    if (!text.trim()) {
-      throw new Error("Text to synthesize cannot be empty.");
-    }
-
-    try {
-      const phonemesList = await phonemizeText(text);
-      const allPhonemes = Array.isArray(phonemesList) ? phonemesList.join(' ') : phonemesList;
-      const phonemeTokens = basicEnglishTokenize(allPhonemes);
-      const phonemeString = phonemeTokens.join(' ');
-      let tokenIds = this.textCleaner.clean(phonemeString);
-
-      // Add start and end tokens
-      tokenIds.unshift(0);
-      tokenIds.push(0);
-
-      const inputIds = new ort.Tensor("int64", BigInt64Array.from(tokenIds.map(id => BigInt(id))), [1, tokenIds.length]);
-      const style = new ort.Tensor("float32", this.voices[selectedVoice], [1, this.voices[selectedVoice].length]);
-      const speed = new ort.Tensor("float32", new Float32Array([1.0]), [1]);
-
-      const feeds = {
-        input_ids: inputIds,
-        style: style,
-        speed: speed,
-      };
-
-      const results = await this.session.run(feeds);
-      const audioOutput = results[Object.keys(results)[0]];
-      
-      let audioData = audioOutput.data as Float32Array;
-      
-      if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      const audioBuffer = this.audioContext.createBuffer(1, audioData.length, 22050);
-      const channelData = audioBuffer.getChannelData(0);
-      
-      // Normalize audio
-      let maxAbs = 0;
-      for (let i = 0; i < audioData.length; i++) {
-        maxAbs = Math.max(maxAbs, Math.abs(audioData[i]));
-      }
-      
-      const normalizedGain = maxAbs > 0 ? 0.8 / maxAbs : 1;
-      for (let i = 0; i < audioData.length; i++) {
-        channelData[i] = audioData[i] * normalizedGain;
-      }
-
-      const wav = audioBufferToWav(audioBuffer);
-      const blob = new Blob([wav], { type: "audio/wav" });
-      const url = URL.createObjectURL(blob);
-      
-      return url;
-      
-    } catch (error) {
-      console.error("Error during speech synthesis:", error);
-      throw error;
-    }
-  }
-
-  public async playAudio(url: string): Promise<void> {
-    this.stopAudio(); // Stop any currently playing audio
-    this.currentAudioElement = new Audio(url);
-    await this.currentAudioElement.play();
-  }
-
-  public stopAudio(): void {
-    if (this.currentAudioElement) {
-      this.currentAudioElement.pause();
-      this.currentAudioElement.currentTime = 0;
-      this.currentAudioElement = null;
-    }
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-  }
-
-  public fallbackToBrowserSpeech(text: string): void {
-    if ("speechSynthesis" in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      window.speechSynthesis.speak(utterance);
-    } else {
-      console.warn("Browser speech synthesis not supported.");
-    }
-  }
-}
-
 const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
-  const [isLoading, setIsLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const speechSynthesizerRef = useRef<SpeechSynthesizer | null>(null);
-
-  useEffect(() => {
-    speechSynthesizerRef.current = new SpeechSynthesizer();
-    speechSynthesizerRef.current.loadModel().catch(error => {
-      console.error("Failed to load speech synthesizer model:", error);
-      // Optionally, handle UI feedback for model loading failure
-    });
-  }, []);
+  const { speechSynthesizer, isLoading, error } = useSpeechSynthesizer();
 
   const handleSpeak = async () => {
-    if (!speechSynthesizerRef.current || isLoading || !text.trim()) return;
+    if (!speechSynthesizer || isLoading || error || !text.trim()) return;
 
-    setIsLoading(true);
     setAudioUrl(null); // Clear previous audio URL
 
     try {
-      const url = await speechSynthesizerRef.current.synthesizeSpeech(text);
+      const url = await speechSynthesizer.synthesizeSpeech(text);
       setAudioUrl(url);
-      await speechSynthesizerRef.current.playAudio(url);
-    } catch (error) {
-      console.error("Error generating or playing speech:", error);
-      speechSynthesizerRef.current.fallbackToBrowserSpeech(text);
-    } finally {
-      setIsLoading(false);
+      await speechSynthesizer.playAudio(url);
+    } catch (err) {
+      console.error("Error generating or playing speech:", err);
+      speechSynthesizer.fallbackToBrowserSpeech(text);
     }
   };
 
   const handleStop = () => {
-    if (speechSynthesizerRef.current) {
-      speechSynthesizerRef.current.stopAudio();
+    if (speechSynthesizer) {
+      speechSynthesizer.stopAudio();
     }
     setAudioUrl(null); // Clear audio URL when stopped
   };
@@ -283,10 +151,10 @@ const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
     <div className="flex items-center space-x-2">
       <button
         onClick={handleSpeak}
-        disabled={isLoading || !text.trim()}
+        disabled={isLoading || !!error || !text.trim()}
         className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
       >
-        {isLoading ? "Generating..." : "Speak"}
+        {isLoading ? "Loading Model..." : "Speak"}
       </button>
       
       {audioUrl && (
