@@ -129,7 +129,7 @@ const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
   const [hasGeneratedAudio, setHasGeneratedAudio] = useState(false); // New state
-  const { speechSynthesizer, isLoading, error } = useSpeechSynthesizer();
+  const { speechSynthesizer, isLoading, error, selectedVoice, speechSpeed } = useSpeechSynthesizer();
   const { isDark } = useTheme(); // Use the theme hook
 
   const handleAudioEnded = () => {
@@ -171,7 +171,7 @@ const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
     await new Promise(resolve => setTimeout(resolve, 50)); // 50ms delay
 
     try {
-      const url = await speechSynthesizer.synthesizeSpeech(text);
+      const url = await speechSynthesizer.synthesizeSpeech(text, selectedVoice, speechSpeed);
       setGeneratedAudioUrl(url);
       setHasGeneratedAudio(true); // Set to true after successful generation
       setIsPlaying(true);

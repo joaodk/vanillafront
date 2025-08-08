@@ -117,7 +117,7 @@ async function phonemizeText(text:string) {
 
 export class SpeechSynthesizer {
   private session: ort.InferenceSession | null = null;
-  private voices: Voice | null = null;
+  public voices: Voice | null = null; // Make voices public
   private textCleaner: TextCleaner;
   private audioContext: AudioContext | null = null;
   private currentAudioElement: HTMLAudioElement | null = null;
@@ -151,7 +151,7 @@ export class SpeechSynthesizer {
     }
   }
 
-  public async synthesizeSpeech(text: string, selectedVoice: string = 'expr-voice-2-m'): Promise<string> {
+  public async synthesizeSpeech(text: string, selectedVoice: string, speechSpeed: number): Promise<string> {
     if (!this.session || !this.voices) {
       throw new Error("Speech synthesis model not loaded.");
     }
@@ -172,12 +172,12 @@ export class SpeechSynthesizer {
 
       const inputIds = new ort.Tensor("int64", BigInt64Array.from(tokenIds.map(id => BigInt(id))), [1, tokenIds.length]);
       const style = new ort.Tensor("float32", this.voices[selectedVoice], [1, this.voices[selectedVoice].length]);
-      const speed = new ort.Tensor("float32", new Float32Array([1.0]), [1]);
+      const speedTensor = new ort.Tensor("float32", new Float32Array([speechSpeed]), [1]);
 
       const feeds = {
         input_ids: inputIds,
         style: style,
-        speed: speed,
+        speed: speedTensor,
       };
 
       const results = await this.session.run(feeds);
@@ -256,12 +256,22 @@ interface SpeechSynthesizerContextType {
   speechSynthesizer: SpeechSynthesizer | null;
   isLoading: boolean;
   error: Error | null;
+  selectedVoice: string;
+  setSelectedVoice: (voice: string) => void;
+  speechSpeed: number;
+  setSpeechSpeed: (speed: number) => void;
+  voices: Voice | null;
 }
 
 const SpeechSynthesizerContext = createContext<SpeechSynthesizerContextType>({
   speechSynthesizer: null,
   isLoading: true,
   error: null,
+  selectedVoice: 'expr-voice-2-m', // Default voice
+  setSelectedVoice: () => {},
+  speechSpeed: 1.0, // Default speed
+  setSpeechSpeed: () => {},
+  voices: null,
 });
 
 interface SpeechSynthesizerProviderProps {
@@ -272,6 +282,8 @@ export const SpeechSynthesizerProvider: React.FC<SpeechSynthesizerProviderProps>
   const [speechSynthesizer, setSpeechSynthesizer] = useState<SpeechSynthesizer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [selectedVoice, setSelectedVoice] = useState<string>('expr-voice-2-m'); // Default voice
+  const [speechSpeed, setSpeechSpeed] = useState<number>(1.0); // Default speed
   const synthesizerRef = useRef<SpeechSynthesizer | null>(null);
 
   useEffect(() => {
@@ -285,6 +297,13 @@ export const SpeechSynthesizerProvider: React.FC<SpeechSynthesizerProviderProps>
         setIsLoading(true);
         setError(null);
         await synthesizerRef.current?.loadModel();
+        // Set default voice if voices are loaded
+        if (synthesizerRef.current?.voices) {
+          const firstVoice = Object.keys(synthesizerRef.current.voices)[0];
+          if (firstVoice) {
+            setSelectedVoice(firstVoice);
+          }
+        }
       } catch (err) {
         console.error("Failed to load speech synthesizer model:", err);
         setError(err as Error);
@@ -297,7 +316,16 @@ export const SpeechSynthesizerProvider: React.FC<SpeechSynthesizerProviderProps>
   }, []);
 
   return (
-    <SpeechSynthesizerContext.Provider value={{ speechSynthesizer, isLoading, error }}>
+    <SpeechSynthesizerContext.Provider value={{ 
+      speechSynthesizer, 
+      isLoading, 
+      error, 
+      selectedVoice, 
+      setSelectedVoice, 
+      speechSpeed, 
+      setSpeechSpeed,
+      voices: speechSynthesizer?.voices || null // Expose voices from the synthesizer instance
+    }}>
       {children}
     </SpeechSynthesizerContext.Provider>
   );
