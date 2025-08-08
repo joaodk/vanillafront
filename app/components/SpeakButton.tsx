@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSpeechSynthesizer } from './SpeechSynthesizerProvider';
+import { useTheme } from './ThemeProvider'; // Import useTheme
 import * as ort from "onnxruntime-web";
 import { phonemize } from 'phonemizer';
 
@@ -129,6 +130,7 @@ const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
   const [hasGeneratedAudio, setHasGeneratedAudio] = useState(false); // New state
   const { speechSynthesizer, isLoading, error } = useSpeechSynthesizer();
+  const { isDark } = useTheme(); // Use the theme hook
 
   const handleAudioEnded = () => {
     setIsPlaying(false);
@@ -202,7 +204,7 @@ const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
   }, [text, speechSynthesizer]);
 
   const buttonContent = () => {
-    const iconClassName = "text-white"; // Apply text-white class to icons
+    const iconClassName = isDark ? "text-white" : "text-black"; // Conditionally apply text color
 
     if (isLoading) {
       return <BusyLoadingIcon size={24} className={iconClassName} />;
