@@ -136,12 +136,12 @@ export function VanillaRuntimeProvider({
   const { getToken, isSignedIn, isLoaded, userId } = useAuth();
   
   // Debug authentication state
-  console.log('=== AUTH STATE DEBUG ===');
-  console.log('isLoaded:', isLoaded);
-  console.log('isSignedIn:', isSignedIn);
-  console.log('userId:', userId);
-  console.log('getToken function exists:', !!getToken);
-  console.log('========================');
+  //console.log('=== AUTH STATE DEBUG ===');
+  //console.log('isLoaded:', isLoaded);
+ // console.log('isSignedIn:', isSignedIn);
+ // console.log('userId:', userId);
+  //console.log('getToken function exists:', !!getToken);
+ // console.log('========================');
   
   const vanillaModelAdapter = createVanillaModelAdapter(getToken);
   const runtime = useLocalRuntime(vanillaModelAdapter);
