@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as ort from "onnxruntime-web";
 import { phonemize } from 'phonemizer';
 
@@ -10,6 +10,46 @@ interface SpeakButtonProps {
 interface Voice {
   [key: string]: Float32Array;
 }
+
+// Helper function to convert AudioBuffer to WAV
+const audioBufferToWav = (buffer: AudioBuffer): ArrayBuffer => {
+  const length = buffer.length;
+  const sampleRate = buffer.sampleRate;
+  const arrayBuffer = new ArrayBuffer(44 + length * 2);
+  const view = new DataView(arrayBuffer);
+
+  const writeString = (offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  // WAV header
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + length * 2, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, "data");
+  view.setUint32(40, length * 2, true);
+
+  // Audio data
+  const channelData = buffer.getChannelData(0);
+  let offset = 44;
+  for (let i = 0; i < length; i++) {
+    const sample = Math.max(-1, Math.min(1, channelData[i]));
+    view.setInt16(offset, sample * 0x7fff, true);
+    offset += 2;
+  }
+
+  return arrayBuffer;
+};
 
 // Text cleaning and tokenization functions
 class TextCleaner {
@@ -80,99 +120,58 @@ async function phonemizeText(text:string) {
     }
 }
 
-const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [session, setSession] = useState<ort.InferenceSession | null>(null);
-  const [voices, setVoices] = useState<Voice | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+class SpeechSynthesizer {
+  private session: ort.InferenceSession | null = null;
+  private voices: Voice | null = null;
+  private textCleaner: TextCleaner;
+  private audioContext: AudioContext | null = null;
+  private currentAudioElement: HTMLAudioElement | null = null;
 
-  useEffect(() => {
-    loadModel();
-  }, []);
+  constructor() {
+    this.textCleaner = new TextCleaner();
+    ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/";
+  }
 
-  const loadModel = async () => {
+  public async loadModel(): Promise<void> {
     try {
-      // Configure ONNX Runtime
-      ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/";
-
-      // Load the ONNX model
-      const session = await ort.InferenceSession.create("/model/kitten_tts_nano_v0_1.onnx");
-      setSession(session);
-
-      // Load voice embeddings
+      this.session = await ort.InferenceSession.create("/model/kitten_tts_nano_v0_1.onnx");
       const voicesResponse = await fetch("/model/voices.json");
       const voicesData = await voicesResponse.json();
 
       const processedVoices: Voice = {};
       for (const [voiceName, voiceArray] of Object.entries(voicesData)) {
-        // Handle both 1D and 2D arrays (flatten if needed)
         const flatArray = Array.isArray((voiceArray as any)[0]) ? (voiceArray as any[]).flat() : voiceArray as number[];
         processedVoices[voiceName] = new Float32Array(flatArray);
       }
-      //console.log(processedVoices)
-      setVoices(processedVoices);
+      this.voices = processedVoices;
+      console.log('Kitten TTS model and voices loaded successfully!');
     } catch (error) {
-      console.error("Error loading model:", error);
+      console.error("Error loading speech synthesis model:", error);
+      throw error; // Re-throw to be handled by the component
     }
-  };
+  }
 
-  const handleSpeak = async () => {
-    if (!session || !voices || !text.trim()) return;
+  public async synthesizeSpeech(text: string, selectedVoice: string = 'expr-voice-2-m'): Promise<string> {
+    if (!this.session || !this.voices) {
+      throw new Error("Speech synthesis model not loaded.");
+    }
+    if (!text.trim()) {
+      throw new Error("Text to synthesize cannot be empty.");
+    }
 
-    setIsLoading(true);
     try {
-        let session: ort.InferenceSession | null = null;
-        let voices: Voice = {};
-        console.log('Loading Kitten TTS model and voices...', 'loading');
-        
-        // Load the ONNX model
-        session = await ort.InferenceSession.create('./model/kitten_tts_nano_v0_1.onnx');
-        
-        // Load real voice embeddings from JSON
-        const voicesResponse = await fetch('./model/voices.json');
-        const voicesData = await voicesResponse.json();
-        
-        // Convert to Float32Arrays
-        for (const [voiceName, voiceArray] of Object.entries(voicesData)) {
-            // Handle both 1D and 2D arrays (flatten if needed)
-            const flatArray = Array.isArray((voiceArray as any)[0]) ? (voiceArray as any[]).flat() : voiceArray as number[];
-            voices[voiceName] = new Float32Array(flatArray);
-        }
-        
-        console.log('Model loaded successfully! Ready to generate speech.', 'ready');
-
-
-      const textCleaner = new TextCleaner();
-      console.log(text);
-      // Simple text cleaning and tokenization
-      var cleanText = text.toLowerCase().trim();
-      console.log(cleanText);
-      //const phonemes = phonemizeText(cleanText)
       const phonemesList = await phonemizeText(text);
-      console.log(phonemesList)
-      // Join phoneme segments and tokenize
       const allPhonemes = Array.isArray(phonemesList) ? phonemesList.join(' ') : phonemesList;
       const phonemeTokens = basicEnglishTokenize(allPhonemes);
-
-      // Join back to string
       const phonemeString = phonemeTokens.join(' ');
-
-      // convert to token IDs
-      let tokenIds = textCleaner.clean(phonemeString);
+      let tokenIds = this.textCleaner.clean(phonemeString);
 
       // Add start and end tokens
       tokenIds.unshift(0);
       tokenIds.push(0);
 
-      const tokens = cleanText.split("").map(char => char.charCodeAt(0) % 256);
-      
-      // Create input tensors
-      const selectedvoice = 'expr-voice-2-m';
-      console.log("tokens:->")
-      console.log(tokens)
       const inputIds = new ort.Tensor("int64", BigInt64Array.from(tokenIds.map(id => BigInt(id))), [1, tokenIds.length]);
-      const style = new ort.Tensor("float32", voices[selectedvoice], [1, voices[selectedvoice].length]);
+      const style = new ort.Tensor("float32", this.voices[selectedVoice], [1, this.voices[selectedVoice].length]);
       const speed = new ort.Tensor("float32", new Float32Array([1.0]), [1]);
 
       const feeds = {
@@ -180,18 +179,16 @@ const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
         style: style,
         speed: speed,
       };
-      console.log(feeds)
 
-      // Run inference
-      const results = await session.run(feeds);
+      const results = await this.session.run(feeds);
       const audioOutput = results[Object.keys(results)[0]];
       
-      // Process audio output
       let audioData = audioOutput.data as Float32Array;
       
-      // Create audio buffer
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const audioBuffer = audioContext.createBuffer(1, audioData.length, 22050);
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const audioBuffer = this.audioContext.createBuffer(1, audioData.length, 22050);
       const channelData = audioBuffer.getChannelData(0);
       
       // Normalize audio
@@ -205,78 +202,81 @@ const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
         channelData[i] = audioData[i] * normalizedGain;
       }
 
-      // Create WAV file
       const wav = audioBufferToWav(audioBuffer);
       const blob = new Blob([wav], { type: "audio/wav" });
       const url = URL.createObjectURL(blob);
       
-      setAudioUrl(url);
-      
-      // Play audio
-      const audio = new Audio(url);
-      setAudioElement(audio);
-      await audio.play();
+      return url;
       
     } catch (error) {
-      console.error("Error generating speech:", error);
-      // Fallback to browser speech synthesis
-      if ("speechSynthesis" in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        window.speechSynthesis.speak(utterance);
-      }
+      console.error("Error during speech synthesis:", error);
+      throw error;
+    }
+  }
+
+  public async playAudio(url: string): Promise<void> {
+    this.stopAudio(); // Stop any currently playing audio
+    this.currentAudioElement = new Audio(url);
+    await this.currentAudioElement.play();
+  }
+
+  public stopAudio(): void {
+    if (this.currentAudioElement) {
+      this.currentAudioElement.pause();
+      this.currentAudioElement.currentTime = 0;
+      this.currentAudioElement = null;
+    }
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  public fallbackToBrowserSpeech(text: string): void {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.warn("Browser speech synthesis not supported.");
+    }
+  }
+}
+
+const SpeakButton: React.FC<SpeakButtonProps> = ({ text, className = "" }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const speechSynthesizerRef = useRef<SpeechSynthesizer | null>(null);
+
+  useEffect(() => {
+    speechSynthesizerRef.current = new SpeechSynthesizer();
+    speechSynthesizerRef.current.loadModel().catch(error => {
+      console.error("Failed to load speech synthesizer model:", error);
+      // Optionally, handle UI feedback for model loading failure
+    });
+  }, []);
+
+  const handleSpeak = async () => {
+    if (!speechSynthesizerRef.current || isLoading || !text.trim()) return;
+
+    setIsLoading(true);
+    setAudioUrl(null); // Clear previous audio URL
+
+    try {
+      const url = await speechSynthesizerRef.current.synthesizeSpeech(text);
+      setAudioUrl(url);
+      await speechSynthesizerRef.current.playAudio(url);
+    } catch (error) {
+      console.error("Error generating or playing speech:", error);
+      speechSynthesizerRef.current.fallbackToBrowserSpeech(text);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleStop = () => {
-    if (audioElement) {
-      audioElement.pause();
-      audioElement.currentTime = 0;
+    if (speechSynthesizerRef.current) {
+      speechSynthesizerRef.current.stopAudio();
     }
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-  };
-
-  // Helper function to convert AudioBuffer to WAV
-  const audioBufferToWav = (buffer: AudioBuffer): ArrayBuffer => {
-    const length = buffer.length;
-    const sampleRate = buffer.sampleRate;
-    const arrayBuffer = new ArrayBuffer(44 + length * 2);
-    const view = new DataView(arrayBuffer);
-
-    const writeString = (offset: number, string: string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-
-    // WAV header
-    writeString(0, "RIFF");
-    view.setUint32(4, 36 + length * 2, true);
-    writeString(8, "WAVE");
-    writeString(12, "fmt ");
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(36, "data");
-    view.setUint32(40, length * 2, true);
-
-    // Audio data
-    const channelData = buffer.getChannelData(0);
-    let offset = 44;
-    for (let i = 0; i < length; i++) {
-      const sample = Math.max(-1, Math.min(1, channelData[i]));
-      view.setInt16(offset, sample * 0x7fff, true);
-      offset += 2;
-    }
-
-    return arrayBuffer;
+    setAudioUrl(null); // Clear audio URL when stopped
   };
 
   return (
