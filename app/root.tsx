@@ -18,6 +18,7 @@ import { rootAuthLoader } from '@clerk/react-router/ssr.server'
 import { dark } from '@clerk/themes'
 import './app.css'
 import { NavigationBar, ThemeProvider, useTheme, SpeechSynthesizerProvider } from './components'
+import { TranscriptionProvider } from './providers/TranscriptionProvider';
 
 import { VanillaRuntimeProvider } from "./VanillaRuntimeProvider";
 
@@ -84,7 +85,8 @@ function AppContent(props: Route.ComponentProps) {
     <ClerkProviderWithTheme loaderData={loaderData}>
       <VanillaRuntimeProvider>
         <SpeechSynthesizerProvider>
-        {/* Sidebar overlay */}
+          <TranscriptionProvider>
+            {/* Sidebar overlay */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40"
@@ -158,6 +160,7 @@ function AppContent(props: Route.ComponentProps) {
       <main className="min-h-[calc(100vh-4rem)]">
         <Outlet />
       </main>
+          </TranscriptionProvider>
         </SpeechSynthesizerProvider>
       </VanillaRuntimeProvider>
     </ClerkProviderWithTheme>

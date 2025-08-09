@@ -2,7 +2,8 @@ import { type FC, useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import SpeakButton from "../components/SpeakButton";
 import AudioRecorder from "../components/AudioRecorder";
-import DebugButton from "../components/DebugButton";
+import TranscribeButton from "../components/TranscribeButton";
+
 
 const AboutPage: FC = () => {
   const [markdown, setMarkdown] = useState("");
@@ -84,7 +85,7 @@ const AboutPage: FC = () => {
                   >
                     Play
                   </button>
-                  <DebugButton audioUrl={audio.url} />
+                  <TranscribeButton audioUrl={audio.url} />
                 </div>
               </li>
             ))}

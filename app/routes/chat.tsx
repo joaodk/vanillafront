@@ -7,11 +7,16 @@ import { Link } from "react-router";
 import { CHAT_API } from "~/lib/constants";
 import { ThreadList } from "~/components/assistant-ui/thread-list";
 import { Thread } from "~/components/assistant-ui/thread";
+import { TranscribeButton } from "~/components";
+import AudioRecorder from "~/components/AudioRecorder";
+import { useState } from "react";
 
 
 
 
 export default function ChatPage() {
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
   return (
     <Protect
       condition={(has) => has({ plan: "full_access" })}
@@ -44,7 +49,8 @@ export default function ChatPage() {
     >
       <div className="grid h-[calc(100dvh-4rem)] grid-cols-none md:grid-cols-[200px_minmax(0,1fr)] gap-x-2 px-4 py-4">
         <div>
-
+          <AudioRecorder onRecordingComplete={(audioBlob: Blob) => setAudioUrl(URL.createObjectURL(audioBlob))} />
+          {audioUrl && <TranscribeButton audioUrl={audioUrl} />}
         </div>
         <Thread />
       </div>
