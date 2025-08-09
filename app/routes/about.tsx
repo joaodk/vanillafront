@@ -2,7 +2,6 @@ import { type FC, useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import SpeakButton from "../components/SpeakButton";
 import AudioRecorder from "../components/AudioRecorder";
-import { AudioTranscriber, type TranscriberData } from "../components/AudioTranscriber";
 import DebugButton from "../components/DebugButton";
 
 const AboutPage: FC = () => {
@@ -54,33 +53,6 @@ const AboutPage: FC = () => {
     audio.play();
   };
 
-  const handleTranscribe = async (audioBlob: Blob) => {
-    if (!audioContextRef.current) {
-      alert("AudioContext not initialized.");
-      return;
-    }
-    setIsTranscribing(true);
-    setTranscriptionResult(null);
-    setShowTranscriptionPopup(false);
-
-    try {
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
-      setAudioBufferToTranscribe(audioBuffer);
-    } catch (error) {
-      console.error("Error decoding audio data:", error);
-      alert("Failed to transcribe audio. Error decoding audio data.");
-      setIsTranscribing(false);
-    }
-  };
-
-  const handleTranscriptionComplete = (data: TranscriberData) => {
-    setTranscriptionResult(data.text);
-    console.log(data.text);
-    setShowTranscriptionPopup(true);
-    setIsTranscribing(false);
-    setAudioBufferToTranscribe(undefined); // Clear the audio buffer after transcription
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -112,13 +84,6 @@ const AboutPage: FC = () => {
                   >
                     Play
                   </button>
-                  <button
-                    className="ml-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => handleTranscribe(audio.blob)}
-                    disabled={isTranscribing}
-                  >
-                    {isTranscribing ? "Transcribing..." : "Transcribe"}
-                  </button>
                   <DebugButton audioUrl={audio.url} />
                 </div>
               </li>
@@ -127,28 +92,7 @@ const AboutPage: FC = () => {
         </div>
       )}
 
-      {audioBufferToTranscribe && (
-        <AudioTranscriber
-          audioData={audioBufferToTranscribe}
-          onTranscript={handleTranscriptionComplete}
-          onBusyChange={setIsTranscribing}
-        />
-      )}
 
-      {showTranscriptionPopup && transcriptionResult && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full dark:bg-gray-800 dark:text-white">
-            <h3 className="text-xl font-bold mb-4">Transcription Result</h3>
-            <p className="mb-6 whitespace-pre-wrap">{transcriptionResult}</p>
-            <button
-              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-              onClick={() => setShowTranscriptionPopup(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
 
       <ReactMarkdown>{markdown}</ReactMarkdown>
     </div>
