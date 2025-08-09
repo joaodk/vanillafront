@@ -128,7 +128,7 @@ export function UserInfoTooltip() {
               </div>
             </div>
             <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
-              <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Speech Settings</h4>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Speech Generation Settings</h4>
               <SpeechSettings />
             </div>
           </div>

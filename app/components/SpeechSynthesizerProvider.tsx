@@ -144,7 +144,6 @@ export class SpeechSynthesizer {
         processedVoices[voiceName] = new Float32Array(flatArray);
       }
       this.voices = processedVoices;
-      console.log('Kitten TTS model and voices loaded successfully!');
     } catch (error) {
       console.error("Error loading speech synthesis model:", error);
       throw error; // Re-throw to be handled by the component
