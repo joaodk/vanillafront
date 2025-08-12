@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { useSpeechSynthesizer } from './SpeechSynthesizerProvider';
+import { useSpeechSynthesizer } from '../providers/SpeechSynthesizerProvider';
 
 const SpeechSettings: React.FC = () => {
   const { speechSynthesizer, isLoading, error, selectedVoice, setSelectedVoice, speechSpeed, setSpeechSpeed, voices } = useSpeechSynthesizer();

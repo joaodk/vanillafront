@@ -1,6 +1,6 @@
 import { type FC, useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
-import SpeakButton from "../components/SpeakButton";
+import { SpeakButton } from "../features/speech";
 import AudioRecorder from "../components/AudioRecorder";
 import { TranscribeButton } from "../components";
 

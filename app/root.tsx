@@ -17,7 +17,8 @@ import "./app.css";
 import { rootAuthLoader } from '@clerk/react-router/ssr.server'
 import { dark } from '@clerk/themes'
 import './app.css'
-import { NavigationBar, ThemeProvider, useTheme, SpeechSynthesizerProvider } from './components'
+import { NavigationBar, ThemeProvider, useTheme } from './components'
+import { SpeechSynthesizerProvider } from './features/speech';
 import { TranscriptionProvider } from './features/transcription/providers/TranscriptionProvider';
 
 import { VanillaRuntimeProvider } from "./VanillaRuntimeProvider";

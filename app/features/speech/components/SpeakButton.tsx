@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSpeechSynthesizer } from './SpeechSynthesizerProvider';
-import { useTheme } from './ThemeProvider'; // Import useTheme
+import { useSpeechSynthesizer } from '../providers/SpeechSynthesizerProvider';
+import { useTheme } from '../../../components/ThemeProvider'; // Import useTheme
 import * as ort from "onnxruntime-web";
 import { phonemize } from 'phonemizer';
 
@@ -13,7 +13,7 @@ interface Voice {
   [key: string]: Float32Array;
 }
 
-import { GenerateIcon, BusyLoadingIcon, PlayIcon, StopIcon } from './ui/audioIcons';
+import { GenerateIcon, BusyLoadingIcon, PlayIcon, StopIcon } from '../../../components/ui/audioIcons';
 
 // Helper function to convert AudioBuffer to WAV
 const audioBufferToWav = (buffer: AudioBuffer): ArrayBuffer => {
