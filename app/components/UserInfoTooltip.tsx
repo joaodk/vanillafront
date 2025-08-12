@@ -2,7 +2,7 @@ import { useUser } from '@clerk/react-router'
 import { useState, useCallback } from 'react'
 import { useAuthData } from '../lib/auth'
 import SpeechSettings from './SpeechSettings'
-import TranscriptionSettings from './TranscriptionSettings'
+import TranscriptionSettings from '../features/transcription/components/TranscriptionSettings'
 
 const safeDateString = (date: Date | null | undefined) => {
   if (!date) return 'Unknown'

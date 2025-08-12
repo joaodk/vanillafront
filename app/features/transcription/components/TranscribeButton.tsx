@@ -1,12 +1,12 @@
 import { type FC, useState } from "react";
 import { useTranscription, type ModelStatus } from '../providers/TranscriptionProvider';
-import { Button } from './ui/button';
+import { Button } from '../../../components/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/tooltip";
+} from "../../../components/ui/tooltip";
 
 interface TranscribeButtonProps {
   audioUrl: string;

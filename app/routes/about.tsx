@@ -2,7 +2,7 @@ import { type FC, useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import SpeakButton from "../components/SpeakButton";
 import AudioRecorder from "../components/AudioRecorder";
-import TranscribeButton from "../components/TranscribeButton";
+import { TranscribeButton } from "../components";
 
 
 const AboutPage: FC = () => {
