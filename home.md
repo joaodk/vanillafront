@@ -29,5 +29,3 @@
 ` `  
 ---
 
-
-Visit our [pricing page](/pricing) to see our plans.

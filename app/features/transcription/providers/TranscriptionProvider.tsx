@@ -16,50 +16,53 @@ interface TranscriptionContextType {
   modelStatus: ModelStatus;
   transcribeAudio: (audioBlob: Blob) => Promise<string | null>;
   loadingProgress: number;
+  loadModel: () => Promise<void>;
 }
 
 const TranscriptionContext = createContext<TranscriptionContextType | undefined>(undefined);
 
 interface TranscriptionProviderProps {
   children: ReactNode;
+  autoLoadModel?: boolean;
 }
 
-export const TranscriptionProvider: React.FC<TranscriptionProviderProps> = ({ children }) => {
+export const TranscriptionProvider: React.FC<TranscriptionProviderProps> = ({ children, autoLoadModel = false }) => {
   const transcriberRef = useRef<any>(null); // Use useRef to hold the transcriber instance
   const [modelStatus, setModelStatus] = useState<ModelStatus>('uninitialized');
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
 
-  useEffect(() => {
-    const loadModel = async () => {
-      if (transcriberRef.current) {
-        console.log("Whisper model already loaded.");
-        setModelStatus('ready'); // Ensure status is 'ready' if already loaded
-        return;
-      }
+  const loadModel = useCallback(async () => {
+    if (transcriberRef.current || modelStatus === 'loading' || modelStatus === 'ready') {
+      if(transcriberRef.current) setModelStatus('ready');
+      return;
+    }
 
-      setModelStatus('loading');
-      console.log("Loading Whisper model...");
+    setModelStatus('loading');
+    console.log("Loading Whisper model...");
 
-      try {
-        transcriberRef.current = await pipeline(
-          'automatic-speech-recognition',
-          'Xenova/whisper-tiny',
-          {
-            progress_callback: (progress: Progress) => {
-              setLoadingProgress(Math.round(progress.progress * 100));
-            }
+    try {
+      transcriberRef.current = await pipeline(
+        'automatic-speech-recognition',
+        'Xenova/whisper-tiny',
+        {
+          progress_callback: (progress: Progress) => {
+            setLoadingProgress(Math.round(progress.progress * 100));
           }
-        );
-        setModelStatus('ready');
-        console.log("Whisper model loaded successfully.");
-      } catch (error) {
-        console.error("Error loading Whisper model:", error);
-        setModelStatus('error');
-      }
-    };
+        }
+      );
+      setModelStatus('ready');
+      console.log("Whisper model loaded successfully.");
+    } catch (error) {
+      console.error("Error loading Whisper model:", error);
+      setModelStatus('error');
+    }
+  }, [modelStatus]);
 
-    loadModel();
-  }, []);
+  useEffect(() => {
+    if (autoLoadModel) {
+      loadModel();
+    }
+  }, [autoLoadModel, loadModel]);
 
   const transcribeAudio = useCallback(async (audioBlob: Blob): Promise<string | null> => {
     if (modelStatus !== 'ready' || !transcriberRef.current) {
@@ -84,7 +87,7 @@ export const TranscriptionProvider: React.FC<TranscriptionProviderProps> = ({ ch
   }, [modelStatus]);
 
   return (
-    <TranscriptionContext.Provider value={{ modelStatus, transcribeAudio, loadingProgress }}>
+    <TranscriptionContext.Provider value={{ modelStatus, transcribeAudio, loadingProgress, loadModel }}>
       {children}
     </TranscriptionContext.Provider>
   );

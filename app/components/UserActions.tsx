@@ -1,11 +1,13 @@
 import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/react-router'
 import { UserInfoTooltip } from './UserInfoTooltip'
 import { DarkModeToggle } from './DarkModeToggle'
+import { ModelStatusIndicator } from './ModelStatusIndicator'
 import { CHAT_API, ENVIRONMENT } from '~/lib/constants';
 
 export function UserActions() {
   return (
     <div className="flex items-center space-x-4">
+      <ModelStatusIndicator />
       <DarkModeToggle />
       <SignedOut>
         <SignInButton>

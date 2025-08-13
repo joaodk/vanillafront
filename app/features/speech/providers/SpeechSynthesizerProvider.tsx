@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode, useCallback } from 'react';
 import * as ort from "onnxruntime-web";
 import { phonemize } from 'phonemizer';
 
@@ -260,42 +260,44 @@ interface SpeechSynthesizerContextType {
   speechSpeed: number;
   setSpeechSpeed: (speed: number) => void;
   voices: Voice | null;
+  loadModel: () => Promise<void>;
+  isModelLoaded: boolean;
 }
 
 const SpeechSynthesizerContext = createContext<SpeechSynthesizerContextType>({
   speechSynthesizer: null,
-  isLoading: true,
+  isLoading: false,
   error: null,
   selectedVoice: 'expr-voice-2-m', // Default voice
   setSelectedVoice: () => {},
   speechSpeed: 1.0, // Default speed
   setSpeechSpeed: () => {},
   voices: null,
+  loadModel: async () => {},
+  isModelLoaded: false,
 });
 
 interface SpeechSynthesizerProviderProps {
   children: ReactNode;
+  autoLoadModel?: boolean;
 }
 
-export const SpeechSynthesizerProvider: React.FC<SpeechSynthesizerProviderProps> = ({ children }) => {
+export const SpeechSynthesizerProvider: React.FC<SpeechSynthesizerProviderProps> = ({ children, autoLoadModel = false }) => {
   const [speechSynthesizer, setSpeechSynthesizer] = useState<SpeechSynthesizer | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [selectedVoice, setSelectedVoice] = useState<string>('expr-voice-2-m'); // Default voice
   const [speechSpeed, setSpeechSpeed] = useState<number>(1.0); // Default speed
   const synthesizerRef = useRef<SpeechSynthesizer | null>(null);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
 
-  useEffect(() => {
-    if (!synthesizerRef.current) {
-      synthesizerRef.current = new SpeechSynthesizer();
-      setSpeechSynthesizer(synthesizerRef.current);
-    }
-
-    const loadModel = async () => {
+  const loadModel = useCallback(async () => {
+    if (synthesizerRef.current && !isModelLoaded) {
       try {
         setIsLoading(true);
         setError(null);
-        await synthesizerRef.current?.loadModel();
+        await synthesizerRef.current.loadModel();
+        setIsModelLoaded(true);
         // Set default voice if voices are loaded
         if (synthesizerRef.current?.voices) {
           const firstVoice = Object.keys(synthesizerRef.current.voices)[0];
@@ -309,10 +311,19 @@ export const SpeechSynthesizerProvider: React.FC<SpeechSynthesizerProviderProps>
       } finally {
         setIsLoading(false);
       }
-    };
+    }
+  }, [isModelLoaded]);
 
-    loadModel();
-  }, []);
+  useEffect(() => {
+    if (!synthesizerRef.current) {
+      synthesizerRef.current = new SpeechSynthesizer();
+      setSpeechSynthesizer(synthesizerRef.current);
+    }
+
+    if (autoLoadModel) {
+      loadModel();
+    }
+  }, [autoLoadModel, loadModel]);
 
   return (
     <SpeechSynthesizerContext.Provider value={{ 
@@ -323,7 +334,9 @@ export const SpeechSynthesizerProvider: React.FC<SpeechSynthesizerProviderProps>
       setSelectedVoice, 
       speechSpeed, 
       setSpeechSpeed,
-      voices: speechSynthesizer?.voices || null // Expose voices from the synthesizer instance
+      voices: speechSynthesizer?.voices || null, // Expose voices from the synthesizer instance
+      loadModel,
+      isModelLoaded,
     }}>
       {children}
     </SpeechSynthesizerContext.Provider>

@@ -1,8 +1,25 @@
-import React, { useContext, useState } from 'react';
+import React from 'react';
 import { useSpeechSynthesizer } from '../providers/SpeechSynthesizerProvider';
+import { useTranscription } from '../../transcription/providers/TranscriptionProvider';
 
 const SpeechSettings: React.FC = () => {
-  const { speechSynthesizer, isLoading, error, selectedVoice, setSelectedVoice, speechSpeed, setSpeechSpeed, voices } = useSpeechSynthesizer();
+  const { 
+    isLoading: isSynthesizerLoading, 
+    error: synthesizerError, 
+    selectedVoice, 
+    setSelectedVoice, 
+    speechSpeed, 
+    setSpeechSpeed, 
+    voices, 
+    loadModel: loadSynthesizerModel, 
+    isModelLoaded: isSynthesizerModelLoaded 
+  } = useSpeechSynthesizer();
+
+  const { 
+    modelStatus: transcriptionModelStatus, 
+    loadModel: loadTranscriptionModel, 
+    loadingProgress: transcriptionLoadingProgress 
+  } = useTranscription();
 
   const handleVoiceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedVoice(event.target.value);
@@ -12,16 +29,25 @@ const SpeechSettings: React.FC = () => {
     setSpeechSpeed(parseFloat(event.target.value));
   };
 
-  const getModelStatus = () => {
-    if (isLoading) return { text: 'Loading...', color: 'text-blue-500' };
-    if (error) return { text: 'Error', color: 'text-red-500' };
-    if (speechSynthesizer && voices) return { text: 'Ready', color: 'text-green-500' };
+  const getSynthesizerModelStatus = () => {
+    if (isSynthesizerLoading) return { text: 'Loading...', color: 'text-blue-500' };
+    if (synthesizerError) return { text: 'Error', color: 'text-red-500' };
+    if (isSynthesizerModelLoaded) return { text: 'Ready', color: 'text-green-500' };
     return { text: 'Not loaded', color: 'text-gray-500' };
   };
 
-  const status = getModelStatus();
+  const synthesizerStatus = getSynthesizerModelStatus();
 
-  if (isLoading) {
+  const getTranscriptionModelStatus = () => {
+    if (transcriptionModelStatus === 'loading') return { text: `Loading... ${transcriptionLoadingProgress}%`, color: 'text-blue-500' };
+    if (transcriptionModelStatus === 'error') return { text: 'Error', color: 'text-red-500' };
+    if (transcriptionModelStatus === 'ready') return { text: 'Ready', color: 'text-green-500' };
+    return { text: 'Not loaded', color: 'text-gray-500' };
+  };
+
+  const transcriptionStatus = getTranscriptionModelStatus();
+
+  if (isSynthesizerLoading) {
     return (
       <div className="p-4 space-y-4">
         <div>
@@ -44,7 +70,7 @@ const SpeechSettings: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (synthesizerError) {
     return (
       <div className="p-4 space-y-4">
         <div>
@@ -63,6 +89,13 @@ const SpeechSettings: React.FC = () => {
           </div>
         </div>
         <div className="text-sm text-red-500 dark:text-red-400">Failed to load speech synthesis model</div>
+        <button
+          onClick={() => loadSynthesizerModel()}
+          disabled={isSynthesizerLoading}
+          className="mt-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+        >
+          {isSynthesizerLoading ? 'Retrying...' : 'Retry'}
+        </button>
       </div>
     );
   }
@@ -71,7 +104,7 @@ const SpeechSettings: React.FC = () => {
     <div className="p-4 space-y-4">
       <div>
         <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Model Information
+          Speech Synthesis Model
         </h5>
         <div className="space-y-2">
           <div>
@@ -80,10 +113,47 @@ const SpeechSettings: React.FC = () => {
           </div>
           <div>
             <span className="text-xs text-gray-500 dark:text-gray-400">Status: </span>
-            <span className={`text-xs font-medium ${status.color}`}>{status.text}</span>
+            <span className={`text-xs font-medium ${synthesizerStatus.color}`}>{synthesizerStatus.text}</span>
           </div>
         </div>
+        {!isSynthesizerModelLoaded && !isSynthesizerLoading && !synthesizerError && (
+            <button
+                onClick={loadSynthesizerModel}
+                className="mt-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+                Load Model
+            </button>
+        )}
       </div>
+
+      <hr className="border-gray-200 dark:border-gray-700" />
+
+      <div>
+        <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Transcription Model
+        </h5>
+        <div className="space-y-2">
+          <div>
+            <span className="text-xs text-gray-500 dark:text-gray-400">Model: </span>
+            <span className="text-xs font-medium text-gray-900 dark:text-white">Whisper Tiny</span>
+          </div>
+          <div>
+            <span className="text-xs text-gray-500 dark:text-gray-400">Status: </span>
+            <span className={`text-xs font-medium ${transcriptionStatus.color}`}>{transcriptionStatus.text}</span>
+          </div>
+        </div>
+        {(transcriptionModelStatus === 'uninitialized' || transcriptionModelStatus === 'error') && (
+            <button
+                onClick={loadTranscriptionModel}
+                disabled={transcriptionModelStatus === 'loading'}
+                className="mt-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+                {transcriptionModelStatus === 'error' ? 'Retry' : 'Load Model'}
+            </button>
+        )}
+      </div>
+
+      <hr className="border-gray-200 dark:border-gray-700" />
 
       <div>
         <label htmlFor="voice-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -93,7 +163,7 @@ const SpeechSettings: React.FC = () => {
           id="voice-select"
           value={selectedVoice}
           onChange={handleVoiceChange}
-          disabled={isLoading || !voices}
+          disabled={isSynthesizerLoading || !voices}
           className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {voices ? (
@@ -103,7 +173,7 @@ const SpeechSettings: React.FC = () => {
               </option>
             ))
           ) : (
-            <option value="">Loading voices...</option>
+            <option value="">{isSynthesizerModelLoaded ? "Loading voices..." : "Model not loaded"}</option>
           )}
         </select>
       </div>
@@ -119,7 +189,7 @@ const SpeechSettings: React.FC = () => {
           step="0.1"
           value={speechSpeed}
           onChange={handleSpeedChange}
-          disabled={isLoading || !voices}
+          disabled={isSynthesizerLoading || !voices}
           className="mt-1 w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
