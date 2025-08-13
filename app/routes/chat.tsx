@@ -49,8 +49,7 @@ export default function ChatPage() {
     >
       <div className="grid h-[calc(100dvh-4rem)] grid-cols-none md:grid-cols-[200px_minmax(0,1fr)] gap-x-2 px-4 py-4">
         <div>
-          <AudioRecorder onRecordingComplete={(audioBlob: Blob) => setAudioUrl(URL.createObjectURL(audioBlob))} />
-          {audioUrl && <TranscribeButton audioUrl={audioUrl} />}
+
         </div>
         <Thread />
       </div>

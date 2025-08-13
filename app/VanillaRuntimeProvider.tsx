@@ -67,13 +67,31 @@ const createVanillaModelAdapter = (getToken: () => Promise<string | null>): Chat
             // normal streaming JSON
             chunks.push(obj);
           }
-        } catch {
-          // fallback for newline-delimited JSON
-          text.split("\n").forEach((line) => {
-            if (line.trim()) {
-              chunks.push(JSON.parse(line));
+        } catch (e) {
+          // fallback for concatenated JSON
+          let buffer = text;
+          let openBraces = 0;
+          let jsonStart = -1;
+
+          for (let i = 0; i < buffer.length; i++) {
+            if (buffer[i] === '{') {
+              if (openBraces === 0) {
+                jsonStart = i;
+              }
+              openBraces++;
+            } else if (buffer[i] === '}') {
+              openBraces--;
+              if (openBraces === 0 && jsonStart !== -1) {
+                const jsonString = buffer.substring(jsonStart, i + 1);
+                try {
+                  chunks.push(JSON.parse(jsonString));
+                } catch (parseError) {
+                  // ignore invalid json
+                }
+                jsonStart = -1;
+              }
             }
-          });
+          }
         }
 
         // process each extracted chunk
