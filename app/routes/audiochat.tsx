@@ -1,21 +1,12 @@
-import type { Route } from "../+types/root";
-import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
-import { useEdgeRuntime } from "@assistant-ui/react-edge";
 import { Protect } from "@clerk/clerk-react";
 import { Link } from "react-router";
-import { CHAT_API } from "~/lib/constants";
-import { ThreadList } from "~/components/assistant-ui/thread-list";
-import { Thread } from "~/components/assistant-ui/thread";
-import { TranscribeButton } from "~/components";
-import AudioRecorder from "~/components/AudioRecorder";
-import { useState } from "react";
+import AudioTranscriber from "~/components/AudioTranscriber";
 
 
 
 
 export default function AudioChatPage() {
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  // Removed unused audioUrl state
 
   return (
     <Protect
@@ -51,7 +42,7 @@ export default function AudioChatPage() {
         <div>
 
         </div>
-        <Thread />
+        <AudioTranscriber />
       </div>
     </Protect>
   )

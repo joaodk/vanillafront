@@ -50,9 +50,9 @@ export const ModelStatusIndicator: React.FC = () => {
   };
 
   const synthProgress = isSynthLoaded ? 50 : (isSynthLoading ? 25 : 0);
-  const transProgress = isTranscriptionReady ? 50 : (isTranscriptionLoading ? transcriptionProgress / 2 : 0);
+  const transProgress = isTranscriptionReady ? 50 : (isTranscriptionLoading ? (typeof transcriptionProgress === 'number' && !isNaN(transcriptionProgress) ? transcriptionProgress / 2 : 0) : 0);
   const progress = synthProgress + transProgress;
-  const circumference = 2 * Math.PI * 8; //circle aroudn the icon
+  const circumference = 2 * Math.PI * 8; //circle around the icon
 
   return (
     <TooltipProvider>

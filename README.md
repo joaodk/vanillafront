@@ -18,62 +18,41 @@ Next steps:
 
 currently working on:
 
+-add a 
+
+
+-render a blank rectangle over the chat window on @audiochat.tsx so that the chat components are not visible. render a blank rectangle instead.
 
 
 
-change the message rendering to display messages as follows - whenever the message stream shows a <think>tag, render like this - given the input "text before <think> text inside "->show like this:
+replace the thread component in the @app/routes/audiochat.tsx for a new component, called 
+│   audiochatview - this component is initialized at first in an idle state - and will show a                  
+│   button-like actionable "start" label. once started, it will move on to "listening" state. when in 
+│   listening state, it will record the audio from the default microphone. 
 
-text before
-<details>
-  <summary>Thinking...</summary>
-  text inside
-</details>
+ (using the                             │
+│   @app/features/transcription and liste
 
-when the message stream closes the tag with a </think>, resume after the details block.
+replace the thread in the @app/routes/audiochat.tsx route for a new component, that has a button in the bottom that alternates between the states: Idle -action start - (clicks leads to ) -> listening -action stop-(click leads to Idle). while listening it will record audio, the recordings will be saved and shown in a table, just above the button. for each recording, there is a play/stop button next to it.
 
-"text before <think> text inside </think> text after"
+, and then transcribe and print the transcription to a text area above the button. 
 
-text before
-<details>
-  <summary>Reasoning</summary>
-  text inside
-</details>
-text after
+-propose a plan to submit the audio as chunks to the transcriber module, so that we can have a seeemingly continuous transcription, that will emulate a text stream that gets written to the screen. at first, lets consider a fixed duration for the chunks, which we can improve later.
 
 
-https://www.assistant-ui.com/docs/runtimes/custom/local#getting-started
+-now, is it possible to improve the chunking approach, by detecting pauses/silences in the audio, then chunking when a pause/silence is detected? make a plan to do so. 
 
-expected response format:
-{
-  "choices": [
-    {
-      "delta": {
-        "content": "text content",
-        "tool_calls": [
-          {
-            "index": 0,
-            "id": "tool_call_id",
-            "function": {
-              "name": "tool_name",
-              "arguments": "{\"arg1\": \"value1\"}"
-            }
-          }
-        ]
-      }
-    }
-  ]
-}
+i am implementing a chunking approach to audio transcription, in 
 
+looks like the first transcription worked, all subsequent ones failed.  we get a "TranscriptionProvider.tsx:109 EncodingError occurred. This might be due to an invalid audio chunk." error.
+propose an implementation to instance multiple audio recorders, an
 
-
-
-Text: ({ part }) => {
-  // Simple string replacement for think tags
-  const processedContent = String((part as any).text || '')
-    .replace(/<think>/g, '<details><summary>Thinking</summary>')
-    .replace(/<\/think>/g, '</details>');
-  
-  return (
-    <div dangerouslySetInnerHTML={{ __html: processedContent }} />
-  );
-}
+this is the console log :
+│    Transcribing audio...                                                                              │
+│    TranscriptionProvider.tsx:83 Transcription complete:  Okay                                         │
+│    TranscriptionProvider.tsx:75 Transcribing audio...                                                 │
+│    TranscriptionProvider.tsx:86 Error transcribing audio: EncodingError: Unable to decode audio data  │
+│    overrideMethod @ hook.js:608                                                                       │
+│    (anonymous) @ TranscriptionProvider.tsx:86                                                         │
+│    await in (anonymous)                                                                               │
+│    processAudioChunk @ AudioTranscription.tsx:23
