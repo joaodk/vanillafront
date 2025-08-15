@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { TranscriptionProvider, useTranscription } from "~/features/transcription/providers/TranscriptionProvider";
+import { MAX_RECORDING_LENGTH_MS } from "~/lib/constants";
 
 type Recording = {
   url: string;
@@ -8,12 +9,23 @@ type Recording = {
 
 interface AudioTranscriberProps {
   onStreamAvailable?: (stream: MediaStream | null) => void;
+  displayFileList?: boolean;
+  onTranscribingChange?: (isTranscribing: boolean) => void;
+  listeningStatus?: "idle" | "listening-speech" | "listening-silence";
+  transcribingStatus?: "idle" | "transcribing";
 }
 
-export default function AudioTranscriber({ onStreamAvailable }: AudioTranscriberProps) {
+export default function AudioTranscriber({ 
+  onStreamAvailable, 
+  displayFileList = true, 
+  onTranscribingChange,
+  listeningStatus = "idle",
+  transcribingStatus = "idle"
+}: AudioTranscriberProps) {
   const { transcribeAudio, loadModel } = useTranscription();
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [transcriptionText, setTranscriptionText] = useState<string>("");
 
   // Refs for stream and recording flag
   const streamRef = useRef<MediaStream | null>(null);
@@ -48,7 +60,7 @@ export default function AudioTranscriber({ onStreamAvailable }: AudioTranscriber
         };
 
         recorder.start();
-        await sleep(5000);
+        await sleep(MAX_RECORDING_LENGTH_MS);
         recorder.stop();
 
         // Wait for onstop to fire to ensure chunks are collected
@@ -62,6 +74,14 @@ export default function AudioTranscriber({ onStreamAvailable }: AudioTranscriber
           const url = URL.createObjectURL(blob);
           const fileName = `recording-${Date.now()}.webm`;
           setRecordings((prev) => [...prev, { url, fileName }]);
+          
+          // Transcribe the audio and update the text field
+          onTranscribingChange?.(true);
+          const transcription = await transcribeAudio(blob);
+          if (transcription) {
+            setTranscriptionText((prev) => prev + (prev ? " " : "") + transcription);
+          }
+          onTranscribingChange?.(false);
         }
       }
     } catch (err) {
@@ -86,24 +106,38 @@ export default function AudioTranscriber({ onStreamAvailable }: AudioTranscriber
   return (
     <TranscriptionProvider>
       <div className="flex flex-col gap-4">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left p-2">File</th>
-              <th className="text-left p-2">Play</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recordings.map((rec, idx) => (
-              <tr key={idx} className="border-b">
-                <td className="p-2">{rec.fileName}</td>
-                <td className="p-2">
-                  <audio controls src={rec.url} className="w-full" />
-                </td>
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Live Transcription:
+          </label>
+          <textarea
+            value={transcriptionText}
+            readOnly
+            className="w-full h-32 p-3 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none"
+            placeholder="Your speech will appear here as you talk..."
+          />
+        </div>
+
+        {displayFileList && (
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-2">File</th>
+                <th className="text-left p-2">Play</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recordings.map((rec, idx) => (
+                <tr key={idx} className="border-b">
+                  <td className="p-2">{rec.fileName}</td>
+                  <td className="p-2">
+                    <audio controls src={rec.url} className="w-full" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
 
         <button
           className={`px-4 py-2 rounded-md text-white ${
@@ -113,6 +147,20 @@ export default function AudioTranscriber({ onStreamAvailable }: AudioTranscriber
         >
           {isRecording ? "Stop" : "Start"}
         </button>
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          {listeningStatus !== "idle" && (
+            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+              listeningStatus === "listening-speech" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+            }`}>
+              {listeningStatus === "listening-speech" ? "Listening: Speech" : "Listening: Silence"}
+            </span>
+          )}
+          {transcribingStatus !== "idle" && (
+            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+              Transcribing
+            </span>
+          )}
+        </div>
       </div>
     </TranscriptionProvider>
   );

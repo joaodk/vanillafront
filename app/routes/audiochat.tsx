@@ -7,17 +7,32 @@ import SilenceDetector from "~/components/SilenceDetector";
 
 export default function AudioChatPage() {
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+  const [displayFileList, setDisplayFileList] = useState(false);
+  const [listeningStatus, setListeningStatus] = useState<"idle" | "listening-speech" | "listening-silence">("idle");
+  const [transcribingStatus, setTranscribingStatus] = useState<"idle" | "transcribing">("idle");
 
   const handleStreamAvailable = useCallback((stream: MediaStream | null) => {
     setAudioStream(stream);
+    if (stream) {
+      setListeningStatus("listening-silence"); // Start in silence detection mode
+    } else {
+      setListeningStatus("idle");
+      setTranscribingStatus("idle");
+    }
   }, []);
 
   const handleSilenceDetected = useCallback(() => {
     console.log("AudioChatPage: Silence detected!");
+    setListeningStatus("listening-silence");
   }, []);
 
   const handleSpeechDetected = useCallback(() => {
     console.log("AudioChatPage: Speech detected!");
+    setListeningStatus("listening-speech");
+  }, []);
+
+  const handleTranscribingChange = useCallback((isTranscribing: boolean) => {
+    setTranscribingStatus(isTranscribing ? "transcribing" : "idle");
   }, []);
 
   return (
@@ -54,7 +69,13 @@ export default function AudioChatPage() {
         <div>
 
         </div>
-        <AudioTranscriber onStreamAvailable={handleStreamAvailable} />
+        <AudioTranscriber 
+          onStreamAvailable={handleStreamAvailable} 
+          displayFileList={displayFileList} 
+          onTranscribingChange={handleTranscribingChange}
+          listeningStatus={listeningStatus}
+          transcribingStatus={transcribingStatus}
+        />
         {audioStream && (
           <SilenceDetector
             audioStream={audioStream}

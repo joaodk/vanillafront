@@ -26,3 +26,7 @@ export const SUGGESTED_QUERIES = [
     label: "why is the sky blue? (short)",
   },
 ];
+
+// Audio recording configuration
+export const MIN_RECORDING_LENGTH_MS = 1000; // Minimum recording length in milliseconds
+export const MAX_RECORDING_LENGTH_MS = 5000; // Maximum recording length in milliseconds
