@@ -1,12 +1,24 @@
 import { Protect } from "@clerk/clerk-react";
+import { useState, useCallback } from "react";
 import { Link } from "react-router";
 import AudioTranscriber from "~/components/AudioTranscriber";
-
-
+import SilenceDetector from "~/components/SilenceDetector";
 
 
 export default function AudioChatPage() {
-  // Removed unused audioUrl state
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+
+  const handleStreamAvailable = useCallback((stream: MediaStream | null) => {
+    setAudioStream(stream);
+  }, []);
+
+  const handleSilenceDetected = useCallback(() => {
+    console.log("AudioChatPage: Silence detected!");
+  }, []);
+
+  const handleSpeechDetected = useCallback(() => {
+    console.log("AudioChatPage: Speech detected!");
+  }, []);
 
   return (
     <Protect
@@ -42,7 +54,14 @@ export default function AudioChatPage() {
         <div>
 
         </div>
-        <AudioTranscriber />
+        <AudioTranscriber onStreamAvailable={handleStreamAvailable} />
+        {audioStream && (
+          <SilenceDetector
+            audioStream={audioStream}
+            onSilenceDetected={handleSilenceDetected}
+            onSpeechDetected={handleSpeechDetected}
+          />
+        )}
       </div>
     </Protect>
   )

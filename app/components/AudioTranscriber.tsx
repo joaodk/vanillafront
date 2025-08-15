@@ -6,7 +6,11 @@ type Recording = {
   fileName: string;
 };
 
-export default function AudioTranscriber() {
+interface AudioTranscriberProps {
+  onStreamAvailable?: (stream: MediaStream | null) => void;
+}
+
+export default function AudioTranscriber({ onStreamAvailable }: AudioTranscriberProps) {
   const { transcribeAudio, loadModel } = useTranscription();
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [isRecording, setIsRecording] = useState(false);
@@ -27,6 +31,7 @@ export default function AudioTranscriber() {
       streamRef.current = stream;
       isRecordingRef.current = true;
       setIsRecording(true);
+      onStreamAvailable?.(stream); // Pass the stream to the parent
 
       while (isRecordingRef.current && streamRef.current) {
         // Record one 5-second segment
@@ -63,7 +68,7 @@ export default function AudioTranscriber() {
       console.error("Error accessing microphone:", err);
       alert("Could not access microphone. Please check permissions.");
     }
-  }, []);
+  }, [onStreamAvailable]);
 
   const stopRecording = useCallback(() => {
     isRecordingRef.current = false;
@@ -71,7 +76,8 @@ export default function AudioTranscriber() {
     // Clean up stream
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
-  }, []);
+    onStreamAvailable?.(null); // Notify parent that stream is no longer available
+  }, [onStreamAvailable]);
 
   const toggleRecording = () => {
     isRecording ? stopRecording() : startRecording();
