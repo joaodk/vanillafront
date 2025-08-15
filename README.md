@@ -56,3 +56,12 @@ this is the console log :
 │    (anonymous) @ TranscriptionProvider.tsx:86                                                         │
 │    await in (anonymous)                                                                               │
 │    processAudioChunk @ AudioTranscription.tsx:23
+
+
+
+got this message when clicking the modelstatusindicator:
+ModelStatusIndicator.tsx:85 Received NaN for the `strokeDashoffset` attribute. If this is expected, cast the value to a string.
+
+
+
+change the behavior of the audiochat to when the "start" button is clicked, the application will continuously record the audio in chunks of 5 seconds, and only stop generating chunks when i click on "stop"
