@@ -143,13 +143,13 @@ const SpeechSettings: React.FC = () => {
           </div>
         </div>
         {(transcriptionModelStatus === 'uninitialized' || transcriptionModelStatus === 'error') && (
-            <button
-                onClick={loadTranscriptionModel}
-                disabled={transcriptionModelStatus === 'loading'}
-                className="mt-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-                {transcriptionModelStatus === 'error' ? 'Retry' : 'Load Model'}
-            </button>
+<button
+    onClick={loadTranscriptionModel}
+    disabled={false}
+    className="mt-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+>
+    {transcriptionModelStatus === 'error' ? 'Retry' : 'Load Model'}
+</button>
         )}
       </div>
 

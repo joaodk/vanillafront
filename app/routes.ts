@@ -6,4 +6,5 @@ export default [
   route("chat", "routes/chat.tsx"),
   route("audiochat", "routes/audiochat.tsx"),
   route("about", "routes/about.tsx"),
+  route("transcriptions", "routes/transcriptions.tsx"),
 ] satisfies RouteConfig;

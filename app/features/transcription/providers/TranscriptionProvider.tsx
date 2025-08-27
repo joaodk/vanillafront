@@ -43,7 +43,9 @@ export const TranscriptionProvider: React.FC<TranscriptionProviderProps> = ({ ch
     try {
       transcriberRef.current = await pipeline(
         'automatic-speech-recognition',
-        'Xenova/whisper-tiny',
+        'Xenova/whisper-tiny', 
+        //'Xenova/whisper-small.en',
+        //'Xenova/whisper-large-v3',
         {
           progress_callback: (progress: Progress) => {
             setLoadingProgress(Math.round(progress.progress * 100));

@@ -1,7 +1,7 @@
 import { redirect } from 'react-router'
 import { getAuth } from '@clerk/react-router/ssr.server'
 import { createClerkClient } from '@clerk/react-router/api.server'
-import type { Route } from './+types/profile'
+import type { Route } from '../+types/root'
 
 export async function loader(args: Route.LoaderArgs) {
   // Use `getAuth()` to get the user's ID
