@@ -131,4 +131,11 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+  .subtitle-popup {
+    position: absolute;
+    bottom: 100%; /* Position above the hovered element */
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }

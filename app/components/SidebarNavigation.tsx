@@ -68,6 +68,16 @@ export function SidebarNavigation({ onLinkClick }: SidebarNavigationProps) {
         </svg>
         Transcriptions
       </Link>
+      <Link
+        to="/video&text learning"
+        onClick={onLinkClick}
+        className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
+      >
+        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+        </svg>
+        Video & Text Learning
+      </Link>
     </nav>
   );
 }
