@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, type DragEvent } from "react";
 import type { FC, ChangeEvent } from "react";
 
 interface SubtitleEntry {
@@ -12,14 +12,10 @@ const VideoTextLearningPlayer: FC = () => {
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [parsedSubtitles, setParsedSubtitles] = useState<SubtitleEntry[]>([]);
   const [hoveredSubtitle, setHoveredSubtitle] = useState<SubtitleEntry | null>(null);
+  const [currentSubtitle, setCurrentSubtitle] = useState<SubtitleEntry | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showFileSelection, setShowFileSelection] = useState(true); // New state for visibility
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  const handleVideoChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setVideoSrc(URL.createObjectURL(file));
-    }
-  };
 
   const parseSrt = (srtContent: string): SubtitleEntry[] => {
     const entries: SubtitleEntry[] = [];
@@ -42,18 +38,52 @@ const VideoTextLearningPlayer: FC = () => {
     return entries;
   };
 
-  const handleSubtitleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target && typeof e.target.result === "string") {
-          const srtContent = e.target.result;
-          setParsedSubtitles(parseSrt(srtContent));
-        }
-      };
-      reader.readAsText(file);
+  const handleFiles = (files: FileList | null) => {
+    if (!files) return;
+
+    let videoFileLoaded = false;
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith("video/")) {
+        setVideoSrc(URL.createObjectURL(file));
+        videoFileLoaded = true;
+      } else if (file.name.endsWith(".srt")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target && typeof e.target.result === "string") {
+            setParsedSubtitles(parseSrt(e.target.result));
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    if (videoFileLoaded) {
+      setShowFileSelection(false); // Hide file selection after video is loaded
     }
+  };
+
+  const handleVideoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    handleFiles(event.target.files);
+  };
+
+  const handleSubtitleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    handleFiles(event.target.files);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    handleFiles(event.dataTransfer.files);
   };
 
   const handleSubtitleClick = (subtitle: SubtitleEntry) => {
@@ -67,50 +97,108 @@ const VideoTextLearningPlayer: FC = () => {
     }
   };
 
+  const handleClearMedia = () => {
+    setVideoSrc(null);
+    setParsedSubtitles([]);
+    setCurrentSubtitle(null);
+    setShowFileSelection(true); // Show file selection again
+  };
+
+  // Helper function to convert time string to seconds
+  const convertTimeToSeconds = (timeString: string): number => {
+    const [hours, minutes, secondsAndMs] = timeString.split(':');
+    const [seconds, milliseconds] = secondsAndMs.split(',');
+    return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds) + parseInt(milliseconds) / 1000;
+  };
+
+  // Track video time and update current subtitle
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || parsedSubtitles.length === 0) return;
+
+    const handleTimeUpdate = () => {
+      const currentTime = video.currentTime;
+      const matchingSubtitle = parsedSubtitles.find(sub => {
+        const start = convertTimeToSeconds(sub.startTime);
+        const end = convertTimeToSeconds(sub.endTime);
+        return currentTime >= start && currentTime <= end;
+      });
+      setCurrentSubtitle(matchingSubtitle || null);
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+  }, [parsedSubtitles]);
+
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Video & Subtitle Player</h2>
-      
-      <div className="mb-4">
-        <label htmlFor="video-upload" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Select Video (.mp4):
-        </label>
-        <input
-          id="video-upload"
-          type="file"
-          accept="video/mp4"
-          onChange={handleVideoChange}
-          className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
-      </div>
+      {showFileSelection && (
+        <div
+          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-200 ${
+            isDragging ? "border-blue-500 bg-blue-50 dark:bg-blue-900" : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <h2 className="text-2xl font-bold mb-4">Video & Subtitle Player</h2>
+          <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">Drag & Drop Video (.mp4) and Subtitle (.srt) files here, or use the buttons below.</p>
 
-      {videoSrc && (
-        <video ref={videoRef} controls src={videoSrc} className="w-full max-w-3xl mx-auto mb-4 rounded-lg shadow-md">
-          Your browser does not support the video tag.
-        </video>
+          <div className="mb-4">
+            <label htmlFor="video-upload" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Select Video (.mp4):
+            </label>
+            <input
+              id="video-upload"
+              type="file"
+              accept="video/mp4"
+              onChange={handleVideoChange}
+              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="subtitle-upload" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Select Subtitle (.srt):
+            </label>
+            <input
+              id="subtitle-upload"
+              type="file"
+              accept=".srt"
+              onChange={handleSubtitleChange}
+              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+        </div>
       )}
 
-      <div className="mb-4">
-        <label htmlFor="subtitle-upload" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Select Subtitle (.srt):
-        </label>
-        <input
-          id="subtitle-upload"
-          type="file"
-          accept=".srt"
-          onChange={handleSubtitleChange}
-          className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
-      </div>
+      {videoSrc && (
+        <div className="relative w-full max-w-full mx-auto mt-8 mb-4">
+          <video ref={videoRef} controls src={videoSrc} className="w-full rounded-lg shadow-md">
+            Your browser does not support the video tag.
+          </video>
+          <button
+            onClick={handleClearMedia}
+            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 text-xs font-bold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+            aria-label="Clear Video"
+          >
+            X
+          </button>
+        </div>
+      )}
 
       {parsedSubtitles.length > 0 && (
         <div className="mt-4 relative">
-          <h3 className="text-xl font-semibold mb-2">Subtitles:</h3>
-          <div className="p-4 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 h-96 overflow-y-auto">
+
+          <div className="p-4 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 h-[700px] overflow-y-auto">
             {parsedSubtitles.map((subtitle, index) => (
               <span
                 key={subtitle.id}
-                className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 rounded-sm px-1 text-lg"
+                className={`cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 rounded-sm px-1 text-xl my-1 ${
+                  currentSubtitle?.id === subtitle.id 
+                    ? 'bg-yellow-200 dark:bg-yellow-600 border-2 border-yellow-400 dark:border-yellow-500' 
+                    : ''
+                }`}
                 onClick={() => handleSubtitleClick(subtitle)}
                 onMouseEnter={() => setHoveredSubtitle(subtitle)}
                 onMouseLeave={() => setHoveredSubtitle(null)}
