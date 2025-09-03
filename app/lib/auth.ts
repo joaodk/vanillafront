@@ -7,6 +7,7 @@ export interface AuthData {
   fullAccess: string;
   premium: string;
   token: string;
+  getToken: () => Promise<string | null>; // Add getToken to AuthData interface
 }
 
 export function useAuthData(): AuthData {
@@ -46,6 +47,7 @@ export function useAuthData(): AuthData {
     freeUser,
     fullAccess,
     premium,
-    token
+    token,
+    getToken // Return getToken
   };
 }
