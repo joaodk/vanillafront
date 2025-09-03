@@ -2,6 +2,7 @@ import type { FC } from "react";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useTranscription } from "~/features/transcription/providers/TranscriptionProvider";
+import { RouteProtection } from "~/components";
 
 const TranscriptionsPage: FC = () => {
   const [markdown, setMarkdown] = useState("");
@@ -263,103 +264,105 @@ const TranscriptionsPage: FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* File selector */}
-      <div>
-          <input
-          type="file"
-          accept="video/*"
-          multiple
-          onChange={handleFileSelect}
-          className="border p-2"
-        />
-      </div>
+    <RouteProtection>
+      <div className="container mx-auto px-4 py-8 space-y-6">
+        {/* File selector */}
+        <div>
+            <input
+            type="file"
+            accept="video/*"
+            multiple
+            onChange={handleFileSelect}
+            className="border p-2"
+          />
+        </div>
 
-      {/* Files table */}
-      {files.length > 0 && (
-        <table className="min-w-full border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border px-2 py-1 text-left">#</th>
-              <th className="border px-2 py-1 text-left">File Name</th>
-              <th className="border px-2 py-1 text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {files.map((file, idx) => {
-              const status = fileStatuses[idx] || { status: 'pending' };
-              return (
-                <tr
-                  key={idx}
-                  className={`cursor-pointer ${
-                    selectedIndex === idx ? "bg-blue-100" : ""
-                  }`}
-                  onClick={() => setSelectedIndex(idx)}
-                >
-                  <td className="border px-2 py-1">{idx + 1}</td>
-                  <td className="border px-2 py-1">{file.name}</td>
-                  <td className="border px-2 py-1">
-                    {status.status === 'pending' && '⏸️ Pending'}
-                    {status.status === 'processing' && `⏳ Processing (${status.progress}%)`}
-                    {status.status === 'completed' && '✅ Completed'}
-                    {status.status === 'error' && `❌ Error: ${status.error}`}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-
-      {/* Transcribe buttons */}
-      <div className="flex gap-2">
-        <button
-          onClick={handleTranscribe}
-          disabled={selectedIndex === null || isTranscribing || isTranscribingAll}
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          {isTranscribing ? `Transcribing (${progress}%)` : "Transcribe Selected"}
-        </button>
-
-        <button
-          onClick={handleTranscribeAll}
-          disabled={files.length === 0 || isTranscribingAll || isTranscribing}
-          className="bg-purple-500 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          {isTranscribingAll ? "Processing All Files..." : "Transcribe All"}
-        </button>
-      </div>
-
-      {/* Transcription textarea */}
-      <div className="mt-4">
-        <textarea
-          value={transcription}
-          readOnly
-          className="w-full h-40 p-2 border rounded resize-none"
-          placeholder="Transcription will appear here..."
-        />
-        {transcription && (
-          <button
-            onClick={() => {
-              const txtBlob = new Blob([transcription], { type: "text/plain" });
-              const url = URL.createObjectURL(txtBlob);
-              const a = document.createElement("a");
-              a.href = url;
-              const fileName = selectedIndex !== null ? files[selectedIndex].name.replace(/\.[^/.]+$/, "") : "transcription";
-              a.download = `${fileName}.txt`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-            className="mt-2 bg-green-500 text-white px-3 py-1 rounded"
-          >
-            Save as .txt
-          </button>
+        {/* Files table */}
+        {files.length > 0 && (
+          <table className="min-w-full border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border px-2 py-1 text-left">#</th>
+                <th className="border px-2 py-1 text-left">File Name</th>
+                <th className="border px-2 py-1 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {files.map((file, idx) => {
+                const status = fileStatuses[idx] || { status: 'pending' };
+                return (
+                  <tr
+                    key={idx}
+                    className={`cursor-pointer ${
+                      selectedIndex === idx ? "bg-blue-100" : ""
+                    }`}
+                    onClick={() => setSelectedIndex(idx)}
+                  >
+                    <td className="border px-2 py-1">{idx + 1}</td>
+                    <td className="border px-2 py-1">{file.name}</td>
+                    <td className="border px-2 py-1">
+                      {status.status === 'pending' && '⏸️ Pending'}
+                      {status.status === 'processing' && `⏳ Processing (${status.progress}%)`}
+                      {status.status === 'completed' && '✅ Completed'}
+                      {status.status === 'error' && `❌ Error: ${status.error}`}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
-      </div>
 
-      {/* Markdown content */}
-      <ReactMarkdown>{markdown}</ReactMarkdown>
-    </div>
+        {/* Transcribe buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleTranscribe}
+            disabled={selectedIndex === null || isTranscribing || isTranscribingAll}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+            {isTranscribing ? `Transcribing (${progress}%)` : "Transcribe Selected"}
+          </button>
+
+          <button
+            onClick={handleTranscribeAll}
+            disabled={files.length === 0 || isTranscribingAll || isTranscribing}
+            className="bg-purple-500 text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+            {isTranscribingAll ? "Processing All Files..." : "Transcribe All"}
+          </button>
+        </div>
+
+        {/* Transcription textarea */}
+        <div className="mt-4">
+          <textarea
+            value={transcription}
+            readOnly
+            className="w-full h-40 p-2 border rounded resize-none"
+            placeholder="Transcription will appear here..."
+          />
+          {transcription && (
+            <button
+              onClick={() => {
+                const txtBlob = new Blob([transcription], { type: "text/plain" });
+                const url = URL.createObjectURL(txtBlob);
+                const a = document.createElement("a");
+                a.href = url;
+                const fileName = selectedIndex !== null ? files[selectedIndex].name.replace(/\.[^/.]+$/, "") : "transcription";
+                a.download = `${fileName}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="mt-2 bg-green-500 text-white px-3 py-1 rounded"
+            >
+              Save as .txt
+            </button>
+          )}
+        </div>
+
+        {/* Markdown content */}
+        <ReactMarkdown>{markdown}</ReactMarkdown>
+      </div>
+    </RouteProtection>
   );
 };
 

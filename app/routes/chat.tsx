@@ -2,7 +2,6 @@ import type { Route } from "../+types/root";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
 import { useEdgeRuntime } from "@assistant-ui/react-edge";
-import { Protect } from "@clerk/clerk-react";
 import { Link } from "react-router";
 import { CHAT_API } from "~/lib/constants";
 import { ThreadList } from "~/components/assistant-ui/thread-list";
@@ -10,6 +9,7 @@ import { Thread } from "~/components/assistant-ui/thread";
 import { TranscribeButton } from "~/components";
 import AudioRecorder from "~/components/AudioRecorder";
 import { useState } from "react";
+import { RouteProtection } from "~/components";
 
 
 
@@ -18,32 +18,13 @@ export default function ChatPage() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   return (
-    <Protect
-      condition={(has) => has({ plan: "full_access" })}
-      fallback={
-        <div className="flex items-center justify-center h-[calc(100dvh-4rem)]">
-          <div className="text-center p-8 max-w-md mx-auto">
-            <div className="mb-6">
-              <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Ops! this requires you to be signed-in
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                You need to be logged in to use this feature.
-              </p>
-            </div>
-          </div>
-        </div>
-      }
-    >
+    <RouteProtection>
       <div className="grid h-[calc(100dvh-4rem)] grid-cols-none md:grid-cols-[200px_minmax(0,1fr)] gap-x-2 px-4 py-4">
         <div>
 
         </div>
         <Thread />
       </div>
-    </Protect>
+    </RouteProtection>
   )
 }

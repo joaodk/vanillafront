@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import type { FC } from "react";
 import ReactMarkdown from "react-markdown";
 import VideoTextLearningPlayer from "~/components/drafts/VideoTextLearningPlayer";
+import { RouteProtection } from "~/components";
 
 const VideoTextLearningPage: FC = () => {
   const [markdown, setMarkdown] = useState("");

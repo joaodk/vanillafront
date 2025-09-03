@@ -1,5 +1,6 @@
 import type { Route } from "./+types/pricing";
 import { PricingTable } from '@clerk/react-router'
+import { RouteProtection } from "~/components";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,6 +11,8 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Pricing() {
   return (
-    <PricingTable />
+    <RouteProtection>
+      <PricingTable />
+    </RouteProtection>
   );
 }

@@ -1,5 +1,6 @@
 import { type FC, useState, useRef, useEffect } from "react";
 import AudioRecorder from "../components/AudioRecorder";
+import { RouteProtection } from "~/components";
 
 interface Recording {
   id: string;
@@ -115,82 +116,84 @@ const AudioClipRecordingPage: FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Audio Clip Recording</h1>
+    <RouteProtection>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Audio Clip Recording</h1>
 
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Title</h2>
-        <input
-          type="text"
-          className="w-full p-4 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-          placeholder="Enter title here..."
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </div>
-
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Script</h2>
-        <textarea
-          className="w-full p-4 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-          rows={10}
-          placeholder="Type your script here..."
-          value={script}
-          onChange={(e) => setScript(e.target.value)}
-        ></textarea>
-      </div>
-
-      <div className="mt-8">
-        <AudioRecorder onRecordingComplete={handleRecordingComplete} />
-      </div>
-
-      {recordings.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4">Your Recordings</h2>
-                  <table className="min-w-full bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-            <thead className="dark:bg-gray-700 dark:text-gray-200">
-              <tr>
-                <th className="py-2 px-4 border-b dark:border-gray-600 text-left">Name</th>
-                <th className="py-2 px-4 border-b dark:border-gray-600 text-left">Duration (s)</th>
-                <th className="py-2 px-4 border-b dark:border-gray-600 text-left">Controls</th>
-                <th className="py-2 px-4 border-b dark:border-gray-600 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="dark:text-gray-100">
-              {recordings.map((recording) => (
-                <tr key={recording.id}>
-                  <td className="py-2 px-4 border-b dark:border-gray-600 text-left">{recording.name}</td>
-                  <td className="py-2 px-4 border-b dark:border-gray-600 text-left">{recording.duration}</td>
-                  <td className="py-2 px-4 border-b dark:border-gray-600 text-left">
-                    <audio
-                      ref={(el) => {
-                        audioRefs.current[recording.id] = el;
-                      }}
-                      src={recording.audioUrl}
-                      preload="auto"
-                    />
-                    <button
-                      onClick={() => handlePlayPause(recording.id)}
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
-                    >
-                      {playingId === recording.id ? "Pause" : "Play"}
-                    </button>
-                  </td>
-                  <td className="py-2 px-4 border-b dark:border-gray-600 text-left">
-                    <button
-                      onClick={() => handleSave(recording)}
-                      className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded"
-                    >
-                      Save
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h2 className="text-2xl font-semibold mb-4">Title</h2>
+          <input
+            type="text"
+            className="w-full p-4 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            placeholder="Enter title here..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </div>
-      )}
-    </div>
+
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold mb-4">Script</h2>
+          <textarea
+            className="w-full p-4 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            rows={10}
+            placeholder="Type your script here..."
+            value={script}
+            onChange={(e) => setScript(e.target.value)}
+          ></textarea>
+        </div>
+
+        <div className="mt-8">
+          <AudioRecorder onRecordingComplete={handleRecordingComplete} />
+        </div>
+
+        {recordings.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-4">Your Recordings</h2>
+                    <table className="min-w-full bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+              <thead className="dark:bg-gray-700 dark:text-gray-200">
+                <tr>
+                  <th className="py-2 px-4 border-b dark:border-gray-600 text-left">Name</th>
+                  <th className="py-2 px-4 border-b dark:border-gray-600 text-left">Duration (s)</th>
+                  <th className="py-2 px-4 border-b dark:border-gray-600 text-left">Controls</th>
+                  <th className="py-2 px-4 border-b dark:border-gray-600 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="dark:text-gray-100">
+                {recordings.map((recording) => (
+                  <tr key={recording.id}>
+                    <td className="py-2 px-4 border-b dark:border-gray-600 text-left">{recording.name}</td>
+                    <td className="py-2 px-4 border-b dark:border-gray-600 text-left">{recording.duration}</td>
+                    <td className="py-2 px-4 border-b dark:border-gray-600 text-left">
+                      <audio
+                        ref={(el) => {
+                          audioRefs.current[recording.id] = el;
+                        }}
+                        src={recording.audioUrl}
+                        preload="auto"
+                      />
+                      <button
+                        onClick={() => handlePlayPause(recording.id)}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
+                      >
+                        {playingId === recording.id ? "Pause" : "Play"}
+                      </button>
+                    </td>
+                    <td className="py-2 px-4 border-b dark:border-gray-600 text-left">
+                      <button
+                        onClick={() => handleSave(recording)}
+                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded"
+                      >
+                        Save
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </RouteProtection>
   );
 };
 
