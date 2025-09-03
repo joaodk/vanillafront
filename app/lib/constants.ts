@@ -9,12 +9,18 @@ if (import.meta.env.VITE_ENVIRONMENT) {
   ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT;
 }
 
-//export const CHAT_API = "http://localhost:8000/api/chat";
-//export const T_API = "http://localhost:8008/chat";
-export const CHAT_API = "http://joaodk-devbox.tail0c7363.ts.net:8008/chat";
-export const ANALYZE_API = "http://joaodk-devbox.tail0c7363.ts.net:8008/analyze";
-//export const CHAT_API = "https://g2ihdgat3d.execute-api.us-east-1.amazonaws.com/api/chat"
-//export const CHAT_API= "https://vplzcnegxgd52leldnygfzhoxa0knoop.lambda-url.us-east-1.on.aws/chat"
+// Development and production API base URLs
+const DEV_API_BASE = "http://joaodk-devbox.tail0c7363.ts.net:8008";
+const PROD_API_BASE = "https://g2ihdgat3d.execute-api.us-east-1.amazonaws.com";
+
+// Determine the current API base based on environment
+const CURRENT_API_BASE = ENVIRONMENT === "DEV" ? DEV_API_BASE : PROD_API_BASE;
+
+// API endpoints
+export const CHAT_API = ENVIRONMENT === "DEV" 
+  ? `${DEV_API_BASE}/chat`
+  : `${PROD_API_BASE}/api/chat`;
+export const ANALYZE_API = `${CURRENT_API_BASE}/analyze`;
 
 export const WELCOME_MESSAGE = "Welcome! How can I help you today?";
 export const SUGGESTED_QUERIES = [

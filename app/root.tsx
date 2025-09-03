@@ -25,7 +25,42 @@ import { TranscriptionProvider } from './features/transcription/providers/Transc
 import { VanillaRuntimeProvider } from "./VanillaRuntimeProvider";
 
 export async function loader(args: Route.LoaderArgs) {
-  return rootAuthLoader(args)
+  try {
+    return await rootAuthLoader(args);
+  } catch (error) {
+    // Handle the dev-browser-missing error gracefully
+    if (error instanceof Error && error.message.includes('dev-browser-missing')) {
+      return {
+        clerkState: {
+          isAuthenticated: false,
+          isSignedIn: false,
+          reason: 'dev-browser-missing'
+        }
+      };
+    }
+    throw error;
+  }
+}
+
+export function HydrateFallback() {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/vanilla-favicon.png" />
+        <title>Loading...</title>
+      </head>
+      <body>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading application...</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  );
 }
 
 export const links: Route.LinksFunction = () => [
@@ -64,6 +99,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
 function ClerkProviderWithTheme({ children, loaderData }: { children: React.ReactNode, loaderData: any }) {
   const { isDark } = useTheme()
   
+  // In SPA mode, we don't need to pass loaderData to ClerkProvider
+  // This prevents the authentication state from being serialized in the HTML
+  if (import.meta.env.PROD) {
+    return (
+      <ClerkProvider
+        publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
+        appearance={{
+          baseTheme: isDark ? dark : undefined,
+        }}
+        signUpFallbackRedirectUrl="/"
+        signInFallbackRedirectUrl="/"
+      >
+        {children}
+      </ClerkProvider>
+    )
+  }
+  
+  // In development, we can pass loaderData for better debugging
   return (
     <ClerkProvider
       publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
