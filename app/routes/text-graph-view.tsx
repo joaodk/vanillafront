@@ -4,6 +4,7 @@ import GraphVisualizer from "../components/GraphVisualizer";
 import PersistentMarkdownEditor from "../components/PersistentMarkdownEditor";
 import type { PersistentMarkdownEditorRef } from "../components/PersistentMarkdownEditor";
 import AnalyzeButton from "../components/AnalyzeButton";
+import EntityRelationshipsView from "../components/EntityRelationshipsView";
 
 // Define TypeScript interfaces for better type safety
 interface Entity {
@@ -31,6 +32,7 @@ const TextGraphViewPage: FC = () => {
   const [lastAnalyzedContent, setLastAnalyzedContent] = useState("");
   const [currentContent, setCurrentContent] = useState("");
   const [activeTab, setActiveTab] = useState<"tabular" | "visual">("tabular");
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   const editorRef = useRef<PersistentMarkdownEditorRef>(null);
 
   // Helper function to get entity name by ID
@@ -38,6 +40,13 @@ const TextGraphViewPage: FC = () => {
     const entity = entities.find(e => e.id === id);
     return entity ? entity.name : id;
   };
+
+  // Set the first entity as selected by default when analysis results are loaded
+  useEffect(() => {
+    if (analysisResult && analysisResult.entities.length > 0 && selectedEntityId === null) {
+      setSelectedEntityId(analysisResult.entities[0].id);
+    }
+  }, [analysisResult, selectedEntityId]);
 
   // Track current content of the editor
   useEffect(() => {
@@ -74,118 +83,15 @@ const TextGraphViewPage: FC = () => {
       </div>
       
       {/* Right pane: preview and graph (2/3 width) */}
-      <div className="w-2/3 pl-4 overflow-auto">
-        {/* Show spinner when analyzing and no results yet */}
-        {isAnalyzing && !analysisResult && (
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-lg text-gray-600">Analyzing text...</p>
-          </div>
-        )}
-        
-        {/* Tab Navigation */}
-        {analysisResult && (analysisResult.entities.length > 0 || analysisResult.relationships.length > 0) && (
-          <div className="flex flex-col h-full">
-            <div className="flex border-b border-gray-200 mb-4">
-              <button
-                className={`py-2 px-4 font-medium text-sm ${activeTab === "tabular" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
-                onClick={() => setActiveTab("tabular")}
-              >
-                Tabular View
-              </button>
-              <button
-                className={`py-2 px-4 font-medium text-sm ${activeTab === "visual" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
-                onClick={() => setActiveTab("visual")}
-              >
-                Visual View
-              </button>
-            </div>
-            
-            {/* Tab Content */}
-            {activeTab === "tabular" ? (
-              <div className="flex flex-col h-full">
-                <h2 className="text-xl font-bold mb-2">Analysis Results</h2>
-            
-                {/* Entities Table */}
-                <div className="mb-4 flex-grow overflow-auto">
-                  <h3 className="text-lg font-semibold mb-1">Entities</h3>
-                  <div className="overflow-auto">
-                    <table className="min-w-full bg-white border border-gray-200">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="py-2 px-4 border-b text-left">ID</th>
-                          <th className="py-2 px-4 border-b text-left">Name</th>
-                          <th className="py-2 px-4 border-b text-left">Type</th>
-                          <th className="py-2 px-4 border-b text-left">Attributes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analysisResult.entities.map((entity) => (
-                          <tr key={entity.id} className="hover:bg-gray-50">
-                            <td className="py-2 px-4 border-b">{entity.id}</td>
-                            <td className="py-2 px-4 border-b">{entity.name}</td>
-                            <td className="py-2 px-4 border-b">{entity.type}</td>
-                            <td className="py-2 px-4 border-b">
-                              {Object.keys(entity.attributes).length > 0 ? (
-                                <pre className="text-xs bg-gray-100 p-2 rounded">
-                                  {JSON.stringify(entity.attributes, null, 2)}
-                                </pre>
-                              ) : (
-                                "None"
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                
-                {/* Relationships Table */}
-                <div className="flex-grow overflow-auto">
-                  <h3 className="text-lg font-semibold mb-1">Relationships</h3>
-                  <div className="overflow-auto">
-                    <table className="min-w-full bg-white border border-gray-200">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="py-2 px-4 border-b text-left">ID</th>
-                          <th className="py-2 px-4 border-b text-left">Entity 1</th>
-                          <th className="py-2 px-4 border-b text-left">Relationship</th>
-                          <th className="py-2 px-4 border-b text-left">Entity 2</th>
-                          <th className="py-2 px-4 border-b text-left">Type</th>
-                          <th className="py-2 px-4 border-b text-left">Score</th>
-                          <th className="py-2 px-4 border-b text-left">Context</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analysisResult.relationships.map((relationship) => (
-                          <tr key={relationship.id} className="hover:bg-gray-50">
-                            <td className="py-2 px-4 border-b">{relationship.id}</td>
-                            <td className="py-2 px-4 border-b">{getEntityName(relationship.entity1_id, analysisResult.entities)}</td>
-                            <td className="py-2 px-4 border-b">{relationship.relationship}</td>
-                            <td className="py-2 px-4 border-b">{getEntityName(relationship.entity2_id, analysisResult.entities)}</td>
-                            <td className="py-2 px-4 border-b">{relationship.type}</td>
-                            <td className="py-2 px-4 border-b">{relationship.score}</td>
-                            <td className="py-2 px-4 border-b">{relationship.context}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // Visual View (blank for now)
-              <div className="flex flex-col h-full">
-                <h2 className="text-xl font-bold mb-2">Visual View</h2>
-                <div className="flex-grow flex items-center justify-center border-2 border-dashed border-gray-300 rounded">
-                  <p className="text-gray-500">Visual representation area (to be implemented)</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <EntityRelationshipsView
+        analysisResult={analysisResult}
+        isAnalyzing={isAnalyzing}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        getEntityName={getEntityName}
+        selectedEntityId={selectedEntityId}
+        setSelectedEntityId={setSelectedEntityId}
+      />
     </div>
   );
 };
