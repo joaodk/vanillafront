@@ -9,4 +9,5 @@ export default [
   route("transcriptions", "routes/transcriptions.tsx"),
   route("video&text learning", "routes/video-text-learning.tsx"),
   route("audio-clip-recording", "routes/audio-clip-recording.tsx"),
+  route("text-graph-view", "routes/text-graph-view.tsx"),
 ] satisfies RouteConfig;

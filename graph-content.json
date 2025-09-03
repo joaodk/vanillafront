@@ -1,0 +1,208 @@
+{
+  "entities": [
+    {
+      "id": "E1",
+      "name": "Ishmael",
+      "type": "Character",
+      "attributes": { "role": "Narrator", "traits": ["philosophical", "restless", "contemplative"] },
+      "parent_id": null
+    },
+    {
+      "id": "E2",
+      "name": "Manhattoes",
+      "type": "Location",
+      "attributes": { "description": "New York City, surrounded by wharves and commerce" },
+      "parent_id": null
+    },
+    {
+      "id": "E3",
+      "name": "Battery",
+      "type": "Location",
+      "attributes": { "description": "Extreme downtown of Manhattan, washed by waves" },
+      "parent_id": "E2"
+    },
+    {
+      "id": "E4",
+      "name": "Corlears Hook",
+      "type": "Location",
+      "parent_id": "E2"
+    },
+    {
+      "id": "E5",
+      "name": "Coenties Slip",
+      "type": "Location",
+      "parent_id": "E2"
+    },
+    {
+      "id": "E6",
+      "name": "Whitehall",
+      "type": "Location",
+      "parent_id": "E2"
+    },
+    {
+      "id": "E7",
+      "name": "Ocean",
+      "type": "Concept",
+      "attributes": { "description": "The sea as a source of fascination, danger, and meaning" },
+      "parent_id": null
+    },
+    {
+      "id": "E8",
+      "name": "Water",
+      "type": "Concept",
+      "attributes": { "description": "Symbolic of life, meditation, and mystery" },
+      "parent_id": null
+    },
+    {
+      "id": "E9",
+      "name": "Narcissus",
+      "type": "Character",
+      "attributes": { "role": "Mythological figure associated with self-reflection and loss" },
+      "parent_id": null
+    },
+    {
+      "id": "E10",
+      "name": "Grand Contested Election for the Presidency of the United States",
+      "type": "Event",
+      "attributes": { "description": "Historical/political event referenced as part of cosmic order" },
+      "parent_id": null
+    },
+    {
+      "id": "E11",
+      "name": "Bloody Battle in Afghanistan",
+      "type": "Event",
+      "attributes": { "description": "Conflict referenced alongside Ishmael's voyage" },
+      "parent_id": null
+    },
+    {
+      "id": "E12",
+      "name": "The Fates",
+      "type": "Concept",
+      "attributes": { "description": "Mythological forces governing human destiny" },
+      "parent_id": null
+    },
+    {
+      "id": "E13",
+      "name": "Whale",
+      "type": "Object",
+      "attributes": { "description": "Portentous and mysterious monster; primary cause of Ishmael’s voyage" },
+      "parent_id": null
+    },
+    {
+      "id": "E14",
+      "name": "Chapter 1 Summary",
+      "type": "Summary",
+      "attributes": { "summary_type": "Factual Summary", "text": "Ishmael introduces himself and explains his impulse to go to sea, culminating in his decision to embark on a whaling voyage driven by fascination with the whale and destiny." },
+      "parent_id": null
+    },
+    {
+      "id": "E15",
+      "name": "Book Summary",
+      "type": "Summary",
+      "attributes": { "summary_type": "Conceptual Summary", "text": "Moby-Dick explores obsession, fate, and humanity’s relationship with the sea and the unknown." },
+      "parent_id": null
+    }
+  ],
+  "relationships": [
+    {
+      "id": "R1",
+      "entity1_id": "E1",
+      "relationship": "seeks escape in",
+      "entity2_id": "E7",
+      "type": "Factual",
+      "score": 1,
+      "context": "Ishmael goes to sea when depressed or restless.",
+      "position": "Chapter 1, Paragraph 1"
+    },
+    {
+      "id": "R2",
+      "entity1_id": "E2",
+      "relationship": "is surrounded by",
+      "entity2_id": "E7",
+      "type": "Factual",
+      "score": 3,
+      "context": "The Manhattoes are described as being surrounded by commerce and the ocean.",
+      "position": "Chapter 1, Paragraph 2"
+    },
+    {
+      "id": "R3",
+      "entity1_id": "E1",
+      "relationship": "chooses role as",
+      "entity2_id": "E1",
+      "type": "Factual",
+      "score": 2,
+      "context": "Ishmael insists on going to sea as a sailor, not passenger, captain, or cook.",
+      "position": "Chapter 1, Paragraphs 10–14"
+    },
+    {
+      "id": "R4",
+      "entity1_id": "E12",
+      "relationship": "determine destiny of",
+      "entity2_id": "E1",
+      "type": "Conceptual",
+      "score": 2,
+      "context": "Ishmael attributes his voyage to the Fates’ program of destiny.",
+      "position": "Chapter 1, Paragraph 16"
+    },
+    {
+      "id": "R5",
+      "entity1_id": "E13",
+      "relationship": "inspires voyage of",
+      "entity2_id": "E1",
+      "type": "Factual",
+      "score": 1,
+      "context": "The mysterious whale was chief among the motives for Ishmael’s decision.",
+      "position": "Chapter 1, Paragraph 19"
+    },
+    {
+      "id": "R6",
+      "entity1_id": "E1",
+      "relationship": "summarizes",
+      "entity2_id": "E14",
+      "type": "Summary",
+      "score": 1,
+      "context": "Chapter 1 summary ties Ishmael’s personal motives to the cosmic theme of destiny and whales.",
+      "position": "Chapter 1"
+    },
+    {
+      "id": "R7",
+      "entity1_id": "E1",
+      "relationship": "represents",
+      "entity2_id": "E8",
+      "type": "Conceptual",
+      "score": 3,
+      "context": "Ishmael associates water with human longing, meditation, and life’s phantom-like nature.",
+      "position": "Chapter 1, Paragraphs 6–8"
+    },
+    {
+      "id": "R8",
+      "entity1_id": "E1",
+      "relationship": "is part of",
+      "entity2_id": "E15",
+      "type": "Summary",
+      "score": 1,
+      "context": "Book-wide summary places Ishmael’s voyage within larger meanings of fate and obsession.",
+      "position": "Book Summary"
+    }
+  ],
+  "concept_groups": [
+    {
+      "id": "C1",
+      "name": "Fate and Destiny",
+      "entities": ["E1", "E12", "E13"],
+      "description": "Ishmael interprets his journey as predestined, connected to the Fates and the whale."
+    },
+    {
+      "id": "C2",
+      "name": "Water and Life",
+      "entities": ["E7", "E8", "E9"],
+      "description": "Water symbolizes mystery, human longing, reflection, and the essence of life."
+    },
+    {
+      "id": "C3",
+      "name": "Escape and Restlessness",
+      "entities": ["E1", "E7"],
+      "description": "Ishmael goes to sea as a counterbalance to melancholy and restlessness."
+    }
+  ]
+}
