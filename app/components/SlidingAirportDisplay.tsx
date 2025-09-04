@@ -84,26 +84,26 @@ const SlidingAirportDisplay = ({
   }, [showingFirst, first.length, third.length, speed]);
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white p-2">
+    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-2">
       {debug && (
         <div className="mb-8 w-full max-w-4xl">
-          <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 text-center mb-6">
             Configurable Display
           </h1>
           
           {/* Configuration inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div>
-              <label className="block text-gray-700 text-sm font-mono mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-mono mb-2">
                 First phrases (one per line):
               </label>
-              <textarea
-                value={firstInput}
-                onChange={(e) => setFirstInput(e.target.value)}
-                onBlur={handleInputChange}
-                className="w-full h-24 bg-white text-gray-700 border border-gray-300 p-2 font-mono text-sm resize-none"
-                placeholder="Enter phrases, one per line"
-              />
+<textarea
+  value={firstInput}
+  onChange={(e) => setFirstInput(e.target.value)}
+  onBlur={handleInputChange}
+  className="w-full h-24 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm resize-none"
+  placeholder="Enter phrases, one per line"
+></textarea>
             </div>
             
             <div>
@@ -114,7 +114,7 @@ const SlidingAirportDisplay = ({
                 type="text"
                 value={secondInput}
                 onChange={(e) => setSecondInput(e.target.value)}
-                className="w-full bg-white text-gray-700 border border-gray-300 p-2 font-mono text-sm"
+                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm"
                 placeholder="Fixed text"
               />
             </div>
@@ -123,13 +123,13 @@ const SlidingAirportDisplay = ({
               <label className="block text-gray-700 text-sm font-mono mb-2">
                 Third phrases (one per line):
               </label>
-              <textarea
-                value={thirdInput}
-                onChange={(e) => setThirdInput(e.target.value)}
-                onBlur={handleInputChange}
-                className="w-full h-24 bg-white text-gray-700 border border-gray-300 p-2 font-mono text-sm resize-none"
-                placeholder="Enter phrases, one per line"
-              />
+<textarea
+  value={thirdInput}
+  onChange={(e) => setThirdInput(e.target.value)}
+  onBlur={handleInputChange}
+  className="w-full h-24 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm resize-none"
+  placeholder="Enter phrases, one per line"
+></textarea>
             </div>
             
             <div>
@@ -143,7 +143,7 @@ const SlidingAirportDisplay = ({
                 min="500"
                 max="10000"
                 step="100"
-                className="w-full bg-white text-gray-700 border border-gray-300 p-2 font-mono text-sm mb-2"
+                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm mb-2"
                 placeholder="2000"
               />
               
@@ -157,15 +157,15 @@ const SlidingAirportDisplay = ({
                 min="200"
                 max="2000"
                 step="50"
-                className="w-full bg-white text-gray-700 border border-gray-300 p-2 font-mono text-sm"
+                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm"
                 placeholder="700"
               />
             </div>
           </div>
           
           {/* Animation Easing Controls */}
-          <div className="mb-6 p-4 bg-gray-50 rounded border border-gray-300">
-            <h3 className="text-gray-800 font-mono text-lg mb-3">Animation Easing (Cubic Bezier)</h3>
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
+            <h3 className="text-gray-800 dark:text-gray-200 font-mono text-lg mb-3">Animation Easing (Cubic Bezier)</h3>
             
             {/* Preset Buttons */}
             <div className="mb-4">
@@ -208,7 +208,7 @@ const SlidingAirportDisplay = ({
                   min="0"
                   max="1"
                   step="0.01"
-                  className="w-full bg-white text-gray-700 border border-gray-300 p-1 font-mono text-xs"
+                  className="w-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-1 font-mono text-xs"
                 />
               </div>
               <div>
@@ -261,7 +261,7 @@ const SlidingAirportDisplay = ({
       <div className="flex items-baseline justify-center text-base w-full mx-auto space-x-3 overflow-hidden" style={{height: '40px'}}>
         {/* First element with slide animation */}
         <div 
-          className="text-gray-800 font-mono text-base text-right transition-all transform"
+          className="text-gray-800 dark:text-gray-100 font-mono text-base text-right transition-all transform"
           style={{
             width: '400px',
             flexShrink: 0,
@@ -278,7 +278,7 @@ const SlidingAirportDisplay = ({
         
         {/* Second element - always visible and FIXED WIDTH */}
         <div 
-          className="text-gray-800 font-mono text-lg text-center flex-shrink-0 bg-white px-4 py-2 rounded border border-gray-300"
+          className="text-gray-800 dark:text-gray-200 font-mono text-lg text-center flex-shrink-0 bg-white dark:bg-gray-800 px-4 py-2 rounded border border-gray-300 dark:border-gray-600"
           style={{ 
             minWidth: '220px',
             maxWidth: '220px'
@@ -289,7 +289,7 @@ const SlidingAirportDisplay = ({
         
         {/* Third element with slide animation */}
         <div 
-          className="text-gray-800 font-mono text-base text-left transition-all transform"
+          className="text-gray-800 dark:text-gray-100 font-mono text-base text-left transition-all transform"
           style={{
             width: '400px',
             flexShrink: 0,

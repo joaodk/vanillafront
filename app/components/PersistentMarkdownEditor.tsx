@@ -10,6 +10,7 @@ interface PersistentMarkdownEditorProps extends Omit<TextareaHTMLAttributes<HTML
 
 export interface PersistentMarkdownEditorRef {
   getContent: () => string;
+  setContent: (content: string) => void;
 }
 
 const PersistentMarkdownEditor = forwardRef<PersistentMarkdownEditorRef, PersistentMarkdownEditorProps>(
@@ -27,9 +28,14 @@ const PersistentMarkdownEditor = forwardRef<PersistentMarkdownEditorRef, Persist
     }, [content]);
 
     // Expose methods to parent components
-    useImperativeHandle(ref, () => ({
-      getContent: () => contentRef.current,
-    }));
+useImperativeHandle(ref, () => ({
+  getContent: () => contentRef.current,
+  setContent: (newContent: string) => {
+    setContent(newContent);
+    contentRef.current = newContent;
+    localStorage.setItem(storageKey, newContent);
+  },
+}));
 
     // Load content from localStorage on mount
     useEffect(() => {

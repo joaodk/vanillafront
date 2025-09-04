@@ -1,0 +1,9 @@
+Linguistic relativity asserts that language influences worldview or cognition. One form of linguistic relativity, linguistic determinism, regards peoples' languages as determining and influencing the scope of cultural perceptions of their surrounding world.[1]
+
+Various colloquialisms refer to linguistic relativism: the Whorf hypothesis; the Sapir–Whorf hypothesis (/səˌpɪər ˈhwɔːrf/ sə-PEER WHORF); the Whorf–Sapir hypothesis; and Whorfianism.
+
+The hypothesis is in dispute, with many different variations throughout its history.[2][3] The strong hypothesis of linguistic relativity, now referred to as linguistic determinism, is that language determines thought and that linguistic categories limit and restrict cognitive categories. This was a claim by some earlier linguists pre-World War II;[4] since then it has fallen out of acceptance by contemporary linguists.[5][need quotation to verify] Nevertheless, research has produced positive empirical evidence supporting a weaker version of linguistic relativity:[5][4] that a language's structures influence a speaker's perceptions, without strictly limiting or obstructing them.
+
+Although common, the term Sapir–Whorf hypothesis is sometimes considered a misnomer for several reasons. Edward Sapir (1884–1939) and Benjamin Lee Whorf (1897–1941) never co-authored any works and never stated their ideas in terms of a hypothesis. The distinction between a weak and a strong version of this hypothesis is also a later development; Sapir and Whorf never used such a dichotomy, although often their writings and their opinions of this relativity principle expressed it in stronger or weaker terms.[6][7]
+
+The principle of linguistic relativity and the relationship between language and thought has also received attention in varying academic fields, including philosophy, psychology and anthropology. It has also influenced works of fiction and the invention of constructed languages.

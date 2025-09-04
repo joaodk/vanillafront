@@ -5,6 +5,7 @@ import PersistentMarkdownEditor from "../components/PersistentMarkdownEditor";
 import type { PersistentMarkdownEditorRef } from "../components/PersistentMarkdownEditor";
 import AnalyzeButton from "../components/AnalyzeButton";
 import EntityRelationshipsView from "../components/EntityRelationshipsView";
+import { Button } from "../components/ui/button";
 import { RouteProtection } from "~/components";
 
 // Define TypeScript interfaces for better type safety
@@ -66,7 +67,7 @@ const TextGraphViewPage: FC = () => {
       <div className="container mx-auto px-4 py-8 flex flex-row h-screen">
         {/* Left pane: textarea and analyze button (1/3 width) */}
         <div className="w-1/3 pr-4 flex flex-col relative">
-          <div className="absolute top-0 left-0 z-10">
+          <div className="absolute top-0 left-0 z-10 flex items-center">
             <AnalyzeButton 
               editorRef={editorRef} 
               onAnalysisComplete={setAnalysisResult} 
@@ -75,6 +76,22 @@ const TextGraphViewPage: FC = () => {
               lastAnalyzedContent={lastAnalyzedContent}
               onLastAnalyzedContentChange={setLastAnalyzedContent}
             />
+            <Button
+              variant="ghost"
+              className="ml-2"
+              onClick={async () => {
+                try {
+                  const response = await fetch("/sample.md");
+                  if (!response.ok) throw new Error("Failed to load sample");
+                  const text = await response.text();
+                  editorRef.current?.setContent(text);
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+            >
+              Load Sample
+            </Button>
           </div>
           <PersistentMarkdownEditor
             ref={editorRef}

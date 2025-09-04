@@ -3,7 +3,7 @@ import { Protect } from "@clerk/clerk-react";
 export function RouteProtection({ children }: { children: React.ReactNode }) {
   return (
     <Protect
-      condition={(has) => has({ plan: "full_access" })}
+      condition={(has) => has({ feature: "premium" })}
       fallback={
         <div className="flex items-center justify-center h-[calc(100dvh-4rem)]">
           <div className="text-center p-8 max-w-md mx-auto">

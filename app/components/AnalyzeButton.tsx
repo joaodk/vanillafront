@@ -68,13 +68,20 @@ const AnalyzeButton: FC<AnalyzeButtonProps> = ({
 
   const handleAnalyze = async () => {
     try {
+      // Get content from the editor ref
+      const content = editorRef.current?.getContent() || "";
+      if (content.length > 5000) {
+        alert(`Text is too long (${content.length} characters). Please limit to 5000 characters.`);
+        setIsLoading(false);
+        onLoadingChange?.(false);
+        stopTimer();
+        return;
+      }
       setIsLoading(true);
       onLoadingChange?.(true);
       startTimer();
-      
+
       const token = await getToken();
-      // Get content from the editor ref
-      const content = editorRef.current?.getContent() || "";
       const response = await fetch(ANALYZE_API, {
         method: "POST",
         headers: {

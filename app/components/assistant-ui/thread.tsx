@@ -18,11 +18,14 @@ import {
   SendHorizontalIcon,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
+import { useState, useEffect, useRef } from "react";
 
 import { Button } from "~/components/ui/button";
 import { WELCOME_MESSAGE, SUGGESTED_QUERIES } from "~/lib/constants";
 import { MarkdownText } from "~/components/assistant-ui/markdown-text";
 import { TooltipIconButton } from "~/components/assistant-ui/tooltip-icon-button";
+import { useVoiceToggle } from "~/providers/VoiceToggleProvider";
+import { useSpeechSynthesizer } from "~/features/speech/providers/SpeechSynthesizerProvider";
 
 export const Thread: FC = () => {
   return (
@@ -196,9 +199,83 @@ const EditComposer: FC = () => {
 };
 
 const AssistantMessage: FC = () => {
+  const { isVoiceEnabled } = useVoiceToggle();
+  const { speechSynthesizer, selectedVoice, speechSpeed, isModelLoaded } = useSpeechSynthesizer();
+  const [hasSpoken, setHasSpoken] = useState(false);
+  const messageContentRef = useRef<HTMLDivElement>(null);
+  const previousContentRef = useRef<string>("");
+
+  // Function to extract plain text from message content
+  const extractTextContent = (element: HTMLElement): string => {
+    return element.innerText || element.textContent || "";
+  };
+
+  // Function to handle speech synthesis
+  const handleSpeechSynthesis = async (text: string) => {
+    if (!speechSynthesizer || !isModelLoaded || !text.trim()) return;
+
+    try {
+      const audioUrl = await speechSynthesizer.synthesizeSpeech(text, selectedVoice, speechSpeed);
+      await speechSynthesizer.playAudio(audioUrl);
+    } catch (error) {
+      console.error("Error with speech synthesis:", error);
+      // Fallback to browser speech synthesis
+      speechSynthesizer.fallbackToBrowserSpeech(text);
+    }
+  };
+
+  // Monitor message content changes and trigger speech when message is complete
+  useEffect(() => {
+    if (!isVoiceEnabled || !messageContentRef.current || hasSpoken) return;
+
+    const observer = new MutationObserver(() => {
+      if (!messageContentRef.current) return;
+      
+      const currentContent = extractTextContent(messageContentRef.current);
+      
+      // Check if content has changed and is substantial
+      if (currentContent !== previousContentRef.current && currentContent.trim().length > 0) {
+        previousContentRef.current = currentContent;
+        
+        // Wait a bit to see if more content is coming (debounce)
+        setTimeout(() => {
+          const finalContent = extractTextContent(messageContentRef.current!);
+          if (finalContent === currentContent && finalContent.trim().length > 0) {
+            handleSpeechSynthesis(finalContent);
+            setHasSpoken(true);
+          }
+        }, 500); // 500ms debounce
+      }
+    });
+
+    observer.observe(messageContentRef.current, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+
+    return () => observer.disconnect();
+  }, [isVoiceEnabled, speechSynthesizer, selectedVoice, speechSpeed, isModelLoaded, hasSpoken]);
+
+  // Reset hasSpoken when voice is toggled off or message changes
+  useEffect(() => {
+    if (!isVoiceEnabled) {
+      setHasSpoken(false);
+    }
+  }, [isVoiceEnabled]);
+
+  // Reset hasSpoken when component unmounts or remounts (new message)
+  useEffect(() => {
+    setHasSpoken(false);
+    previousContentRef.current = "";
+  }, []);
+
   return (
     <MessagePrimitive.Root className="grid grid-cols-[auto_auto_1fr] grid-rows-[auto_1fr] relative w-full max-w-[var(--thread-max-width)] py-4">
-      <div className="text-foreground max-w-[calc(var(--thread-max-width)*0.8)] break-words leading-7 col-span-2 col-start-2 row-start-1 my-1.5">
+      <div 
+        ref={messageContentRef}
+        className="text-foreground max-w-[calc(var(--thread-max-width)*0.8)] break-words leading-7 col-span-2 col-start-2 row-start-1 my-1.5"
+      >
         <MessagePrimitive.Content components={{ Text: MarkdownText }} />
         <MessageError />
       </div>

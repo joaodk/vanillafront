@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import SlidingAirportDisplay from "./SlidingAirportDisplay";
 import GraphView from "./GraphView";
+import SelectedEntityDetails from "./SelectedEntityDetails";
 
 // Define TypeScript interfaces for better type safety
 interface Entity {
@@ -41,6 +42,7 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
   selectedEntityId,
   setSelectedEntityId
 }) => {
+  const selectedEntity = analysisResult?.entities.find(e => e.id === selectedEntityId) || null;
   return (
     <div className="w-2/3 pl-4 overflow-auto">
       {/* Show spinner when analyzing and no results yet */}
@@ -78,7 +80,7 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
               <div className="mb-4 flex-grow overflow-auto">
                 <h3 className="text-lg font-semibold mb-1">Entities</h3>
                 <div className="overflow-auto">
-                  <table className="min-w-full bg-white border border-gray-200">
+                  <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="py-2 px-4 border-b text-left">ID</th>
@@ -89,11 +91,11 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
                     </thead>
                     <tbody>
                       {analysisResult.entities.map((entity) => (
-                        <tr 
-                          key={entity.id} 
-                          className={`cursor-pointer hover:bg-gray-50 ${selectedEntityId === entity.id ? 'bg-blue-100' : ''}`}
-                          onClick={() => setSelectedEntityId(entity.id)}
-                        >
+<tr 
+  key={entity.id} 
+  className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${selectedEntityId === entity.id ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+  onClick={() => setSelectedEntityId(entity.id)}
+>
                           <td className="py-2 px-4 border-b">{entity.id}</td>
                           <td className="py-2 px-4 border-b font-medium">{entity.name}</td>
                           <td className="py-2 px-4 border-b">{entity.type}</td>
@@ -179,13 +181,19 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
                         Reset Visualization
                       </button>
                     </div>
-                    <GraphView
-                      entities={analysisResult.entities}
-                      relationships={analysisResult.relationships}
-                      selectedEntityId={selectedEntityId}
-                      setSelectedEntityId={setSelectedEntityId}
-                      getEntityName={getEntityName}
-                    />
+<GraphView
+  entities={analysisResult.entities}
+  relationships={analysisResult.relationships}
+  selectedEntityId={selectedEntityId}
+  setSelectedEntityId={setSelectedEntityId}
+  getEntityName={getEntityName}
+/>
+<SelectedEntityDetails
+  entity={selectedEntity}
+  relationships={analysisResult.relationships}
+  getEntityName={getEntityName}
+  entities={analysisResult.entities}
+/>
                   </div>
                 </div>
               )}

@@ -10,6 +10,9 @@ import { TranscribeButton } from "~/components";
 import AudioRecorder from "~/components/AudioRecorder";
 import { useState } from "react";
 import { RouteProtection } from "~/components";
+import { SpeechSynthesizerProvider } from "~/features/speech/providers/SpeechSynthesizerProvider";
+import { VoiceToggleProvider } from "~/providers/VoiceToggleProvider";
+import { VoiceToggle } from "~/components/VoiceToggle";
 
 
 
@@ -19,12 +22,27 @@ export default function ChatPage() {
 
   return (
     <RouteProtection>
-      <div className="grid h-[calc(100dvh-4rem)] grid-cols-none md:grid-cols-[200px_minmax(0,1fr)] gap-x-2 px-4 py-4">
-        <div>
+      <SpeechSynthesizerProvider autoLoadModel={true}>
+        <VoiceToggleProvider>
+          <div className="grid h-[calc(100dvh-4rem)] grid-cols-none md:grid-cols-[200px_minmax(0,1fr)] gap-x-2 px-4 py-4">
+            <div>
 
-        </div>
-        <Thread />
-      </div>
+            </div>
+            <div className="flex flex-col h-full">
+              {/* Voice toggle positioned below the assistant area */}
+              <div className="flex justify-end mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Voice</span>
+                  <VoiceToggle />
+                </div>
+              </div>
+              <div className="flex-1">
+                <Thread />
+              </div>
+            </div>
+          </div>
+        </VoiceToggleProvider>
+      </SpeechSynthesizerProvider>
     </RouteProtection>
   )
 }
