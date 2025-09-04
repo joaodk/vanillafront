@@ -34,7 +34,7 @@ const SelectedEntityDetails: FC<SelectedEntityDetailsProps> = ({
 }) => {
   if (!entity) {
     return (
-      <div className="mt-2 p-2 border border-gray-200 rounded bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm">
+      <div className="mt-2 p-2 rounded bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm">
         <p>No entity selected.</p>
       </div>
     );
@@ -46,7 +46,7 @@ const SelectedEntityDetails: FC<SelectedEntityDetailsProps> = ({
   );
 
   return (
-    <div className="mt-2 p-2 border border-gray-200 rounded bg-white dark:bg-gray-900 dark:border-gray-700">
+      <div className="mt-2 p-2 rounded bg-white dark:bg-gray-900">
       <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
         Details for: {entity.name}
       </h3>
@@ -65,7 +65,7 @@ const SelectedEntityDetails: FC<SelectedEntityDetailsProps> = ({
             return (
               <li
                 key={rel.id}
-                className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700"
+                className="p-2 bg-gray-50 dark:bg-gray-800 rounded"
               >
                 <p className="text-sm text-gray-800 dark:text-gray-200">
                   <span className="font-medium">{relationText}</span>

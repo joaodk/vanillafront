@@ -3,11 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build",
+    "build": "npm run download-models && react-router build",
     "dev": "vite dev --host 0.0.0.0 -- --no-sandbox",
     "dev:prod-api": "VITE_ENVIRONMENT=PROD vite dev --host 0.0.0.0 -- --no-sandbox",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "download-models": "node scripts/download-models.js",
+    "postinstall": "npm run download-models"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.22",

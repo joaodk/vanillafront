@@ -11,3 +11,5 @@ run:
 	npm run dev
 run-prod-api:
 	npm run dev:prod-api
+download-models:
+	node scripts/download-models.js

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-const LINE_HEIGHT = 20; // px – matches current single‑line height
-const VISIBLE_LINES = 3;
+const LINE_HEIGHT = 32; // px – increased for more vertical space
+const VISIBLE_LINES = 4; // show more lines for more height
 const CONTAINER_HEIGHT = LINE_HEIGHT * VISIBLE_LINES;
 
 interface SlidingAirportDisplayProps {
@@ -88,7 +88,7 @@ const SlidingAirportDisplay = ({
   }, [showingFirst, first.length, third.length, speed]);
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-1">
+    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-1 w-full min-h-24">
       {debug && (
         <div className="mb-8 w-full max-w-4xl">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 text-center mb-6">
@@ -105,7 +105,7 @@ const SlidingAirportDisplay = ({
   value={firstInput}
   onChange={(e) => setFirstInput(e.target.value)}
   onBlur={handleInputChange}
-  className="w-full h-24 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm resize-none"
+  className="w-full h-24 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 p-2 font-mono text-sm resize-none"
   placeholder="Enter phrases, one per line"
 ></textarea>
             </div>
@@ -118,7 +118,7 @@ const SlidingAirportDisplay = ({
                 type="text"
                 value={secondInput}
                 onChange={(e) => setSecondInput(e.target.value)}
-                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm"
+                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 p-2 font-mono text-sm"
                 placeholder="Fixed text"
               />
             </div>
@@ -131,7 +131,7 @@ const SlidingAirportDisplay = ({
   value={thirdInput}
   onChange={(e) => setThirdInput(e.target.value)}
   onBlur={handleInputChange}
-  className="w-full h-24 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm resize-none"
+  className="w-full h-24 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 p-2 font-mono text-sm resize-none"
   placeholder="Enter phrases, one per line"
 ></textarea>
             </div>
@@ -147,7 +147,7 @@ const SlidingAirportDisplay = ({
                 min="500"
                 max="10000"
                 step="100"
-                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm mb-2"
+                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 p-2 font-mono text-sm"
                 placeholder="2000"
               />
               
@@ -161,14 +161,14 @@ const SlidingAirportDisplay = ({
                 min="200"
                 max="2000"
                 step="50"
-                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 p-2 font-mono text-sm"
+                className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 p-2 font-mono text-sm"
                 placeholder="700"
               />
             </div>
           </div>
           
           {/* Animation Easing Controls */}
-          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded">
             <h3 className="text-gray-800 dark:text-gray-200 font-mono text-lg mb-3">Animation Easing (Cubic Bezier)</h3>
             
             {/* Preset Buttons */}
@@ -262,13 +262,13 @@ const SlidingAirportDisplay = ({
       )}
       
         {/* Actual Display Area */}    
-      <div className="flex items-baseline justify-center text-xs w-full mx-auto space-x-1 overflow-hidden" style={{height: `${CONTAINER_HEIGHT}px`}}>
+      <div className="flex items-baseline justify-center text-lg w-full mx-auto space-x-2 overflow-hidden min-h-24" style={{height: `${CONTAINER_HEIGHT}px`}}>
         {/* First element with slide animation */}
         <div 
-          className="text-gray-800 dark:text-gray-100 font-mono text-xs text-right transition-all transform"
+          className="text-gray-800 dark:text-gray-100 font-mono text-base text-right transition-all transform flex-1"
           style={{
-            width: '220px',
-            flexShrink: 0,
+            minWidth: 0,
+            flexBasis: 0,
             transform: showingFirst && !transitioning ? 'translateY(0px)' : 
                       transitioning && showingFirst ? `translateY(${LINE_HEIGHT}px)` :
                       transitioning && !showingFirst ? `translateY(-${LINE_HEIGHT}px)` : `translateY(${LINE_HEIGHT}px)`,
@@ -280,12 +280,12 @@ const SlidingAirportDisplay = ({
           {first[currentFirstIndex]}
         </div>
         
-        {/* Second element - always visible and FIXED WIDTH */}
+        {/* Second element - always visible and FLEXIBLE WIDTH */}
         <div 
-          className="text-gray-800 dark:text-gray-200 font-mono text-xs text-center flex-shrink-0 bg-gray-50 dark:bg-gray-800 px-1 py-0.5 rounded border border-gray-200 dark:border-gray-600"
+          className="text-gray-800 dark:text-gray-200 font-mono text-base text-center flex-shrink-0 bg-gray-50 dark:bg-gray-900 px-2 py-1 rounded"
           style={{ 
-            minWidth: '120px',
-            maxWidth: '120px'
+            minWidth: '140px',
+            maxWidth: '240px'
           }}
         >
           {second}
@@ -293,10 +293,10 @@ const SlidingAirportDisplay = ({
         
         {/* Third element with slide animation */}
         <div 
-          className="text-gray-800 dark:text-gray-100 font-mono text-xs text-left transition-all transform"
+          className="text-gray-800 dark:text-gray-100 font-mono text-base text-left transition-all transform flex-1"
           style={{
-            width: '220px',
-            flexShrink: 0,
+            minWidth: 0,
+            flexBasis: 0,
             transform: !showingFirst && !transitioning ? 'translateY(0px)' : 
                       transitioning && !showingFirst ? `translateY(${LINE_HEIGHT}px)` :
                       transitioning && showingFirst ? `translateY(-${LINE_HEIGHT}px)` : `translateY(${LINE_HEIGHT}px)`,

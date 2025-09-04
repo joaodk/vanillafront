@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import type { FC } from "react";
-import GraphVisualizer from "../components/GraphVisualizer";
 import PersistentMarkdownEditor from "../components/PersistentMarkdownEditor";
 import type { PersistentMarkdownEditorRef } from "../components/PersistentMarkdownEditor";
 import AnalyzeButton from "../components/AnalyzeButton";
@@ -33,7 +32,6 @@ const TextGraphViewPage: FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [lastAnalyzedContent, setLastAnalyzedContent] = useState("");
   const [currentContent, setCurrentContent] = useState("");
-  const [activeTab, setActiveTab] = useState<"tabular" | "visual">("tabular");
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   const editorRef = useRef<PersistentMarkdownEditorRef>(null);
 
@@ -105,8 +103,6 @@ const TextGraphViewPage: FC = () => {
         <EntityRelationshipsView
           analysisResult={analysisResult}
           isAnalyzing={isAnalyzing}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
           getEntityName={getEntityName}
           selectedEntityId={selectedEntityId}
           setSelectedEntityId={setSelectedEntityId}

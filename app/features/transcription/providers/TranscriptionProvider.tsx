@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { pipeline, env, read_audio } from '@xenova/transformers';
 
-// Set the cache directory to a public path
-env.cacheDir = './public/model';
+// Configure transformers to use local models
+env.allowLocalModels = true;
+env.allowRemoteModels = false;
+env.localModelPath = './model/';
+env.cacheDir = './model/';
 
 export interface Progress {
   progress: number;
@@ -43,9 +46,7 @@ export const TranscriptionProvider: React.FC<TranscriptionProviderProps> = ({ ch
     try {
       transcriberRef.current = await pipeline(
         'automatic-speech-recognition',
-        'Xenova/whisper-tiny', 
-        //'Xenova/whisper-small.en',
-        //'Xenova/whisper-large-v3',
+        'whisper-tiny', // Use local model name
         {
           progress_callback: (progress: Progress) => {
             setLoadingProgress(Math.round(progress.progress * 100));

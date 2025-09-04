@@ -8,4 +8,6 @@ export default defineConfig({
   server: {
     allowedHosts: ["joaodk-devbox.tail0c7363.ts.net"],
   },
+  publicDir: 'public',
+  assetsInclude: ['**/*.onnx','**/*.json'],
 });
