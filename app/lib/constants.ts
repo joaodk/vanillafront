@@ -20,7 +20,10 @@ const CURRENT_API_BASE = ENVIRONMENT === "DEV" ? DEV_API_BASE : PROD_API_BASE;
 export const CHAT_API = ENVIRONMENT === "DEV" 
   ? `${DEV_API_BASE}/chat`
   : `${PROD_API_BASE}/api/chat`;
-export const ANALYZE_API = `${CURRENT_API_BASE}/analyze`;
+  
+export const ANALYZE_API = ENVIRONMENT === "DEV" 
+  ? `${DEV_API_BASE}/analyze`
+  : `${PROD_API_BASE}/api/analyze`;
 
 export const WELCOME_MESSAGE = "Welcome! How can I help you today?";
 export const SUGGESTED_QUERIES = [

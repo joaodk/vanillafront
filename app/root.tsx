@@ -9,12 +9,11 @@ import {
 } from "react-router";
 
 import { ClerkProvider } from '@clerk/react-router'
-import { useState } from 'react'
+import { useState, useEffect, Component } from 'react'
 
 import type { Route } from "./+types/root";
 import "./app.css";
 
-import { rootAuthLoader } from '@clerk/react-router/ssr.server'
 import { dark } from '@clerk/themes'
 import './app.css'
 import { NavigationBar, ThemeProvider, useTheme } from './components'
@@ -25,41 +24,23 @@ import { TranscriptionProvider } from './features/transcription/providers/Transc
 import { VanillaRuntimeProvider } from "./VanillaRuntimeProvider";
 
 export async function loader(args: Route.LoaderArgs) {
-  try {
-    return await rootAuthLoader(args);
-  } catch (error) {
-    // Handle the dev-browser-missing error gracefully
-    if (error instanceof Error && error.message.includes('dev-browser-missing')) {
-      return {
-        clerkState: {
-          isAuthenticated: false,
-          isSignedIn: false,
-          reason: 'dev-browser-missing'
-        }
-      };
-    }
-    throw error;
-  }
+  // In SPA mode, we don't need server-side authentication state
+  // This prevents Clerk state from being serialized in the HTML
+  return {
+    clerkState: null
+  };
 }
 
 export function HydrateFallback() {
+  // In SPA mode, HydrateFallback should only return the content, not the full HTML structure
+  // The Layout component already provides the html/head/body structure
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/vanilla-favicon.png" />
-        <title>Loading...</title>
-      </head>
-      <body>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading application...</p>
-          </div>
-        </div>
-      </body>
-    </html>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading application...</p>
+      </div>
+    </div>
   );
 }
 
@@ -96,15 +77,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ClerkProviderWithTheme({ children, loaderData }: { children: React.ReactNode, loaderData: any }) {
+function ClerkProviderWithTheme({ children }: { children: React.ReactNode }) {
   const { isDark } = useTheme()
   
-  // In SPA mode, we don't need to pass loaderData to ClerkProvider
-  // This prevents the authentication state from being serialized in the HTML
-  if (import.meta.env.PROD) {
+  // Check if Clerk publishable key is available
+  const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+  
+  if (!publishableKey) {
+    // Log the issue for debugging but don't crash the app
+    console.warn('VITE_CLERK_PUBLISHABLE_KEY is not set. Authentication features will be disabled.')
+    
+    // Render app without Clerk provider
+    return <>{children}</>
+  }
+  
+  try {
+    // For SPA mode, always initialize Clerk client-side only
+    // This prevents authentication state from being serialized in the HTML
     return (
       <ClerkProvider
-        publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
+        publishableKey={publishableKey}
         appearance={{
           baseTheme: isDark ? dark : undefined,
         }}
@@ -114,69 +106,120 @@ function ClerkProviderWithTheme({ children, loaderData }: { children: React.Reac
         {children}
       </ClerkProvider>
     )
+  } catch (error) {
+    console.error('Failed to initialize Clerk:', error)
+    // Fallback to rendering without Clerk
+    return <>{children}</>
   }
-  
-  // In development, we can pass loaderData for better debugging
-  return (
-    <ClerkProvider
-      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
-      appearance={{
-        baseTheme: isDark ? dark : undefined,
-      }}
-      loaderData={loaderData}
-      signUpFallbackRedirectUrl="/"
-      signInFallbackRedirectUrl="/"
-    >
-      {children}
-    </ClerkProvider>
-  )
+}
+
+// Error boundary to catch React errors during hydration
+class HydrationErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    console.error('Hydration error caught by boundary:', error);
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('Error during hydration:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center p-8 max-w-md mx-auto">
+            <h2 className="text-xl font-bold text-red-600 mb-4">
+              Application Error
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Something went wrong while loading the application.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Reload Page
+            </button>
+            {import.meta.env.DEV && this.state.error && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500">
+                  Error Details
+                </summary>
+                <pre className="mt-2 p-2 bg-gray-100 text-xs overflow-auto">
+                  {this.state.error.stack}
+                </pre>
+              </details>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }
 
 function AppContent(props: Route.ComponentProps) {
   const { loaderData } = props
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  return (
-    <ClerkProviderWithTheme loaderData={loaderData}>
-      <VanillaRuntimeProvider>
-        <SpeechSynthesizerProvider>
-          <TranscriptionProvider>
-            {/* Sidebar overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-      
-      {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <div className="p-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Menu</h2>
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <SidebarNavigation onLinkClick={() => setIsSidebarOpen(false)} />
-        </div>
-      </div>
+  // Add debugging to track hydration
+  useEffect(() => {
+    console.log('AppContent mounted, hydration complete');
+  }, []);
 
-      <NavigationBar onMenuClick={() => setIsSidebarOpen(true)} />
-      <main className="min-h-[calc(100vh-4rem)]">
-        <Outlet />
-      </main>
-          </TranscriptionProvider>
-        </SpeechSynthesizerProvider>
-      </VanillaRuntimeProvider>
-    </ClerkProviderWithTheme>
+  return (
+    <HydrationErrorBoundary>
+      <ClerkProviderWithTheme>
+        <VanillaRuntimeProvider>
+          <SpeechSynthesizerProvider>
+            <TranscriptionProvider>
+              {/* Sidebar overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+        
+        {/* Sidebar */}
+        <div className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <div className="p-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Menu</h2>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <SidebarNavigation onLinkClick={() => setIsSidebarOpen(false)} />
+          </div>
+        </div>
+
+        <NavigationBar onMenuClick={() => setIsSidebarOpen(true)} />
+        <main className="min-h-[calc(100vh-4rem)]">
+          <Outlet />
+        </main>
+            </TranscriptionProvider>
+          </SpeechSynthesizerProvider>
+        </VanillaRuntimeProvider>
+      </ClerkProviderWithTheme>
+    </HydrationErrorBoundary>
   )
 }
 

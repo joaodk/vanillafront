@@ -5,6 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "vite dev --host 0.0.0.0 -- --no-sandbox",
+    "dev:prod-api": "VITE_ENVIRONMENT=PROD vite dev --host 0.0.0.0 -- --no-sandbox",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },
