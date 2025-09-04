@@ -104,7 +104,7 @@ const GraphView: React.FC<GraphViewProps> = ({
     nodes: {
       shape: 'box',
       font: {
-        size: 14,
+        size: 12, // smaller font for compactness
       },
     },
     edges: {
@@ -113,7 +113,7 @@ const GraphView: React.FC<GraphViewProps> = ({
         to: { enabled: true, scaleFactor: 0.5 },
       },
       font: {
-        size: 12,
+        size: 10, // smaller font for compactness
         align: 'middle',
       },
       smooth: {
@@ -130,19 +130,22 @@ const GraphView: React.FC<GraphViewProps> = ({
       navigationButtons: true,
       keyboard: true,
     },
-    height: '500px',
+    // Remove fixed height, will be set by container
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-grow" style={{ height: '500px' }}>
-        <Graph
-          key={`graph-${nodes.length}-${edges.length}`} // Force remount when data changes
-          graph={graph}
-          options={options}
-          events={events}
-        />
-      </div>
+    <div
+      style={{
+        height: '400px',
+        width: '100%',
+      }}
+    >
+      <Graph
+        key={`graph-${nodes.length}-${edges.length}`} // Force remount when data changes
+        graph={graph}
+        options={options}
+        events={events}
+      />
     </div>
   );
 };

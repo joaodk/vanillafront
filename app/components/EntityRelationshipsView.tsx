@@ -44,7 +44,7 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
 }) => {
   const selectedEntity = analysisResult?.entities.find(e => e.id === selectedEntityId) || null;
   return (
-    <div className="w-2/3 pl-4 overflow-auto">
+    <div className="w-2/3 pl-3 overflow-auto">
       {/* Show spinner when analyzing and no results yet */}
       {isAnalyzing && !analysisResult && (
         <div className="flex flex-col items-center justify-center h-full">
@@ -56,7 +56,7 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
       {/* Tab Navigation */}
       {analysisResult && (analysisResult.entities.length > 0 || analysisResult.relationships.length > 0) && (
         <div className="flex flex-col h-full">
-          <div className="flex border-b border-gray-200 mb-4">
+          <div className="flex border-b border-gray-200 mb-3">
             <button
               className={`py-2 px-4 font-medium text-sm ${activeTab === "tabular" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
               onClick={() => setActiveTab("tabular")}
@@ -74,19 +74,19 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
           {/* Tab Content */}
           {activeTab === "tabular" ? (
             <div className="flex flex-col h-full">
-              <h2 className="text-xl font-bold mb-2">Analysis Results</h2>
+              <h2 className="text-lg font-bold mb-2">Analysis Results</h2>
           
               {/* Entities Table */}
-              <div className="mb-4 flex-grow overflow-auto">
-                <h3 className="text-lg font-semibold mb-1">Entities</h3>
+              <div className="mb-3 flex-grow overflow-auto">
+                <h3 className="text-base font-semibold mb-1">Entities</h3>
                 <div className="overflow-auto">
                   <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="py-2 px-4 border-b text-left">ID</th>
-                        <th className="py-2 px-4 border-b text-left">Name</th>
-                        <th className="py-2 px-4 border-b text-left">Type</th>
-                        <th className="py-2 px-4 border-b text-left">Attributes</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">ID</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Name</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Type</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Attributes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -96,12 +96,12 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
   className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${selectedEntityId === entity.id ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
   onClick={() => setSelectedEntityId(entity.id)}
 >
-                          <td className="py-2 px-4 border-b">{entity.id}</td>
-                          <td className="py-2 px-4 border-b font-medium">{entity.name}</td>
-                          <td className="py-2 px-4 border-b">{entity.type}</td>
-                          <td className="py-2 px-4 border-b">
+                          <td className="py-1 px-3 border-b text-sm">{entity.id}</td>
+                          <td className="py-1 px-3 border-b font-medium text-sm">{entity.name}</td>
+                          <td className="py-1 px-3 border-b text-sm">{entity.type}</td>
+                          <td className="py-1 px-3 border-b text-sm">
                             {Object.keys(entity.attributes).length > 0 ? (
-                              <pre className="text-xs bg-gray-100 p-2 rounded">
+                              <pre className="text-xs bg-gray-100 p-1 rounded">
                                 {JSON.stringify(entity.attributes, null, 2)}
                               </pre>
                             ) : (
@@ -117,30 +117,30 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
               
               {/* Relationships Table */}
               <div className="flex-grow overflow-auto">
-                <h3 className="text-lg font-semibold mb-1">Relationships</h3>
+                <h3 className="text-base font-semibold mb-1">Relationships</h3>
                 <div className="overflow-auto">
                   <table className="min-w-full bg-white border border-gray-200">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="py-2 px-4 border-b text-left">ID</th>
-                        <th className="py-2 px-4 border-b text-left">Entity 1</th>
-                        <th className="py-2 px-4 border-b text-left">Relationship</th>
-                        <th className="py-2 px-4 border-b text-left">Entity 2</th>
-                        <th className="py-2 px-4 border-b text-left">Type</th>
-                        <th className="py-2 px-4 border-b text-left">Score</th>
-                        <th className="py-2 px-4 border-b text-left">Context</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">ID</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Entity 1</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Relationship</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Entity 2</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Type</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Score</th>
+                        <th className="py-1 px-3 border-b text-left text-sm">Context</th>
                       </tr>
                     </thead>
                     <tbody>
                       {analysisResult.relationships.map((relationship) => (
                         <tr key={relationship.id} className="hover:bg-gray-50">
-                          <td className="py-2 px-4 border-b">{relationship.id}</td>
-                          <td className="py-2 px-4 border-b">{getEntityName(relationship.entity1_id, analysisResult.entities)}</td>
-                          <td className="py-2 px-4 border-b">{relationship.relationship}</td>
-                          <td className="py-2 px-4 border-b">{getEntityName(relationship.entity2_id, analysisResult.entities)}</td>
-                          <td className="py-2 px-4 border-b">{relationship.type}</td>
-                          <td className="py-2 px-4 border-b">{relationship.score}</td>
-                          <td className="py-2 px-4 border-b">{relationship.context}</td>
+                          <td className="py-1 px-3 border-b text-sm">{relationship.id}</td>
+                          <td className="py-1 px-3 border-b text-sm">{getEntityName(relationship.entity1_id, analysisResult.entities)}</td>
+                          <td className="py-1 px-3 border-b text-sm">{relationship.relationship}</td>
+                          <td className="py-1 px-3 border-b text-sm">{getEntityName(relationship.entity2_id, analysisResult.entities)}</td>
+                          <td className="py-1 px-3 border-b text-sm">{relationship.type}</td>
+                          <td className="py-1 px-3 border-b text-sm">{relationship.score}</td>
+                          <td className="py-1 px-3 border-b text-sm">{relationship.context}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -151,10 +151,9 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
           ) : (
             // Visual View with Graph
             <div className="flex flex-col h-full">
-              <h2 className="text-xl font-bold mb-2">Visual View</h2>
               {analysisResult && (
                 <div className="flex-grow flex flex-col">
-                  <div className="h-24 flex items-center justify-center border-2 border-dashed border-gray-300 rounded mb-4">
+                  <div className="h-8 flex items-center justify-center border border-gray-200 rounded mb-2">
                     {selectedEntityId && analysisResult ? (
                       <SlidingAirportDisplay 
                         first={analysisResult.relationships
@@ -171,15 +170,9 @@ const EntityRelationshipsView: FC<EntityRelationshipsViewProps> = ({
                       <SlidingAirportDisplay />
                     )}
                   </div>
-                  <div className="flex-grow border border-gray-300 rounded p-2">
-                    <div className="flex justify-between items-center mb-2">
+                  <div className="border border-gray-200 rounded p-1">
+                    <div className="flex justify-between items-center mb-1">
                       <h3 className="text-lg font-semibold">Graph Visualization</h3>
-                      <button 
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm"
-                        onClick={() => window.location.reload()}
-                      >
-                        Reset Visualization
-                      </button>
                     </div>
 <GraphView
   entities={analysisResult.entities}

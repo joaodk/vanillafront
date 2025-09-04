@@ -64,9 +64,9 @@ const TextGraphViewPage: FC = () => {
 
   return (
     <RouteProtection>
-      <div className="container mx-auto px-4 py-8 flex flex-row h-screen">
+      <div className="container mx-auto px-3 py-4 flex flex-row h-screen">
         {/* Left pane: textarea and analyze button (1/3 width) */}
-        <div className="w-1/3 pr-4 flex flex-col relative">
+        <div className="w-1/3 pr-3 flex flex-col relative">
           <div className="absolute top-0 left-0 z-10 flex items-center">
             <AnalyzeButton 
               editorRef={editorRef} 
@@ -97,7 +97,7 @@ const TextGraphViewPage: FC = () => {
             ref={editorRef}
             storageKey="textGraphMarkdown"
             initialContentUrl="/text-graph-view.md"
-            className="w-full h-full border rounded p-2 flex-grow mt-10"
+            className="w-full h-full border rounded p-2 flex-grow mt-8"
           />
         </div>
         

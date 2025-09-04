@@ -34,7 +34,7 @@ const SelectedEntityDetails: FC<SelectedEntityDetailsProps> = ({
 }) => {
   if (!entity) {
     return (
-      <div className="mt-4 p-4 border border-gray-300 rounded bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-600 dark:text-gray-300">
+      <div className="mt-2 p-2 border border-gray-200 rounded bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm">
         <p>No entity selected.</p>
       </div>
     );
@@ -46,14 +46,14 @@ const SelectedEntityDetails: FC<SelectedEntityDetailsProps> = ({
   );
 
   return (
-    <div className="mt-4 p-4 border border-gray-300 rounded bg-white dark:bg-gray-900 dark:border-gray-700">
-      <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">
+    <div className="mt-2 p-2 border border-gray-200 rounded bg-white dark:bg-gray-900 dark:border-gray-700">
+      <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
         Details for: {entity.name}
       </h3>
       {relatedRelationships.length === 0 ? (
-        <p className="text-gray-700 dark:text-gray-300">No relationships found.</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300">No relationships found.</p>
       ) : (
-        <ul className="space-y-2 max-h-48 overflow-auto">
+        <ul className="space-y-1 max-h-32 overflow-auto">
           {relatedRelationships.map((rel) => {
             const isEntity1 = rel.entity1_id === entity.id;
             const otherEntityId = isEntity1 ? rel.entity2_id : rel.entity1_id;
@@ -65,12 +65,12 @@ const SelectedEntityDetails: FC<SelectedEntityDetailsProps> = ({
             return (
               <li
                 key={rel.id}
-                className="p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700"
+                className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700"
               >
-                <p className="text-gray-800 dark:text-gray-200">
+                <p className="text-sm text-gray-800 dark:text-gray-200">
                   <span className="font-medium">{relationText}</span>
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{rel.context}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">{rel.context}</p>
               </li>
             );
           })}
