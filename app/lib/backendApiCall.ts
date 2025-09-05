@@ -2,8 +2,9 @@ import { CHAT_API } from "./constants";
 import type { ChatModelRunOptions } from "../../node_modules/@assistant-ui/react/src/runtimes/local/ChatModelAdapter";
 
 export async function backendApiCall(
-  options: ChatModelRunOptions, 
-  getToken?: () => Promise<string | null>
+  options: ChatModelRunOptions,
+  getToken?: () => Promise<string | null>,
+  endpoint?: string
 ): Promise<ReadableStream> {
   const { messages, abortSignal } = options;
   
@@ -62,14 +63,16 @@ export async function backendApiCall(
     .map(([key, value]) => `-H "${key}: ${value}"`)
     .join(" ");
 
-  const curlCommand = `curl -X POST ${CHAT_API} ${curlHeaders} -d '${JSON.stringify({messages,})}'`;
+  const apiEndpoint = endpoint || CHAT_API;
+
+  const curlCommand = `curl -X POST ${apiEndpoint} ${curlHeaders} -d '${JSON.stringify({messages,})}'`;
 //  console.log("curl command:", curlCommand);
-  
+
   //console.log('Token value before API call:', token || 'No token provided (possibly not loaded yet)');
-  // console.log('Making API call to:', CHAT_API);
+  // console.log('Making API call to:', apiEndpoint);
   // console.log('Request headers:', headers);
-  
-  const response = await fetch(CHAT_API, {
+
+  const response = await fetch(apiEndpoint, {
     method: "POST",
     headers,
     body: JSON.stringify({

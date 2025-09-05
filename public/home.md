@@ -11,22 +11,19 @@ Entity extraction is one of the first things I remember testing with LLMs "back 
 
 Graph representation of content presents a possible path for enhancing RAG pipelines, but beyond that I tried to explore if there is an opportunity to support learning.
 
-### Why does this matter?
-
 well, A lot of the AI applications I've seen are, to some extent, replacing human work — making it simpler and more efficient. But we still want and need to study and understand topics that are increasingly complex. So how can LLMs help us with that?
 
 There's some movement in edtech exploring "Socratic assistants," but I haven't seen many applications exploring how AI can support us in *researching* a topic. This was my exploration in that space. after that we saw some evolution in that space in the mainstream - like mindmaps in notebookLM.
-
-
-### Future Plans
 
 Of Course as any personal project the roadmap is huge ;) maybe I will expand this some time, maybe with better graph visualization, maybe work with longer format texts (like books) and see how larger graphs can generate insight. maybe experiment with summarit
 
 ---
 
+## 🧠 audio responses in chat (the chat route)
+
+in the chat route there is 
 ## 
 
-The code and implementations are continuously evolving as new capabilities and techniques emerge in the field.
 
 ---
 

@@ -9,7 +9,7 @@ import {
 import { backendApiCall } from "./lib/backendApiCall";
 import { useAuth } from "@clerk/clerk-react";
 
-const createVanillaModelAdapter = (getToken: () => Promise<string | null>): ChatModelAdapter => ({
+const createVanillaModelAdapter = (getToken: () => Promise<string | null>, endpoint?: string): ChatModelAdapter => ({
   async *run(options: any) {
     // Always yield once at the start to ensure this is an async generator
     yield { content: [] };
@@ -17,7 +17,7 @@ const createVanillaModelAdapter = (getToken: () => Promise<string | null>): Chat
     const { messages, abortSignal, context } = options;
     let stream;
     try {
-      stream = await backendApiCall(options, getToken);
+      stream = await backendApiCall(options, getToken, endpoint);
     } catch (error) {
       yield {
         content: [],
@@ -148,11 +148,13 @@ const createVanillaModelAdapter = (getToken: () => Promise<string | null>): Chat
 
 export function VanillaRuntimeProvider({
   children,
+  endpoint,
 }: {
   children: ReactNode;
+  endpoint?: string;
 }) {
   const { getToken, isSignedIn, isLoaded, userId } = useAuth();
-  
+
   // Debug authentication state
   //console.log('=== AUTH STATE DEBUG ===');
   //console.log('isLoaded:', isLoaded);
@@ -160,8 +162,8 @@ export function VanillaRuntimeProvider({
  // console.log('userId:', userId);
   //console.log('getToken function exists:', !!getToken);
  // console.log('========================');
-  
-  const vanillaModelAdapter = createVanillaModelAdapter(getToken);
+
+  const vanillaModelAdapter = createVanillaModelAdapter(getToken, endpoint);
   const runtime = useLocalRuntime(vanillaModelAdapter);
 
   return (

@@ -17,23 +17,27 @@ const PROD_API_BASE = "https://g2ihdgat3d.execute-api.us-east-1.amazonaws.com";
 const CURRENT_API_BASE = ENVIRONMENT === "DEV" ? DEV_API_BASE : PROD_API_BASE;
 
 // API endpoints
-export const CHAT_API = ENVIRONMENT === "DEV" 
+export const CHAT_API = ENVIRONMENT === "DEV"
   ? `${DEV_API_BASE}/chat`
   : `${PROD_API_BASE}/api/chat`;
-  
-export const ANALYZE_API = ENVIRONMENT === "DEV" 
+
+export const AUDIO_CHAT_API = ENVIRONMENT === "DEV"
+  ? `${DEV_API_BASE}/chat_succint`
+  : `${PROD_API_BASE}/api/chat_succint`;
+
+export const ANALYZE_API = ENVIRONMENT === "DEV"
   ? `${DEV_API_BASE}/analyze`
   : `${PROD_API_BASE}/api/analyze`;
 
 export const WELCOME_MESSAGE = "Welcome! How can I help you today?";
 export const SUGGESTED_QUERIES = [
   {
-    prompt: "What is the weather in tokyo like today?",
-    label: "What is the weather in tokyo like today?",
+    prompt: "Hello!",
+    label: "Hello!",
   },
   {
-    prompt: "why is the sky blue? do not think, give a quick response consistent with voice output.",
-    label: "why is the sky blue? (short)",
+    prompt: "why is the sky blue?",
+    label: "why is the sky blue?",
   },
 ];
 
