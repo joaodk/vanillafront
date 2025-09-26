@@ -5,3 +5,5 @@
 /.react-router/
 /build/
 nohup.out
+# Environment files
+.env*
