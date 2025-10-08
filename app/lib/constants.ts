@@ -10,8 +10,8 @@ if (import.meta.env.VITE_ENVIRONMENT) {
 }
 
 // Development and production API base URLs
-const DEV_API_BASE = "http://joaodk-devbox.tail0c7363.ts.net:8008";
-const PROD_API_BASE = "https://g2ihdgat3d.execute-api.us-east-1.amazonaws.com";
+const DEV_API_BASE = import.meta.env.DEV_API_BASE;
+const PROD_API_BASE = import.meta.env.PROD_API_BASE;
 
 // Determine the current API base based on environment
 const CURRENT_API_BASE = ENVIRONMENT === "DEV" ? DEV_API_BASE : PROD_API_BASE;
